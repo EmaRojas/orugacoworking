@@ -1,14 +1,45 @@
-// Import packages
+//dependencias instaladas en este proyecto : express, mongoose, nodemon -D, dotenv
+
 const express = require("express");
-const home = require("./routes/home");
-
-// Middlewares
 const app = express();
-app.use(express.json());
 
-// Routes
-app.use("/home", home);
+// npm i dotenv - dependencia para gestionar las variables de entorno
+// require("dotenv").config();
 
-// connection
-const port = process.env.PORT || 9001;
-app.listen(port, () => console.log(`Listening to port ${port}`));
+//npm i mongose - dependencia para conectar MongoDB y poder gestionar los documentos de la BBDD
+const mongoose = require("mongoose");
+
+//npm i cors - para desplegar datos en front
+// app.use(cors())
+
+// hay que importarlos siempre y cuando utilizamos directamente el router
+// const AuthorRouter = require("./router/AuthorRouter");
+// const BookRouter = require("./router/BookRouter");
+
+// sintaxis para poder gestionar los datos por req.body
+app.use(express.json({ extended: true }));
+app.use(express.urlencoded());
+
+//ENRUTADO para la carpeta ROUTER
+// app.use("/api", AuthorRouter);
+// app.use("/api", BookRouter);
+
+app.use("/api", require("./routes/ClientRouter"));
+
+// conexión BBDD
+//antes definir vuestra url en el archivo .env
+const URL = "mongodb+srv://facunquintana:nS3XIqH6bdQEyqtL@orugacoworking.gyoky1q.mongodb.net/?retryWrites=true&w=majority";
+mongoose
+  .connect(URL, {})
+  .then(() => {
+    console.log("BD is now connected");
+  })
+  .catch((err) => {
+    console.log(err);
+  });
+
+//Servidor a la escucha
+app.listen(3000, () => {
+  console.log("Servidor a la escucha en el puerto 3000");
+});
+// const url = "mongodb+srv://facunquintana:nS3XIqH6bdQEyqtL@orugacoworking.gyoky1q.mongodb.net/?retryWrites=true&w=majority";
