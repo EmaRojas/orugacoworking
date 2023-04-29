@@ -1,4 +1,4 @@
-//dependencias instaladas en este proyecto : express, mongoose, nodemon -D, dotenv
+//dependenciass instaladas en este proyecto : express, mongoose, nodemon -D, dotenv
 
 const express = require("express");
 const app = express();
