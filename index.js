@@ -1,4 +1,4 @@
-//dependencias instaladas en este proyecto : express, mongoose, nodemon -D, dotenv
+//dependenciass instaladas en este proyecto : express, mongoose, nodemon -D, dotenv
 
 const express = require("express");
 const app = express();
@@ -24,8 +24,7 @@ app.use(express.urlencoded());
 // app.use("/api", AuthorRouter);
 // app.use("/api", BookRouter);
 
-app.use("/api/clients", require("./routes/ClientRouter"));
-app.use("/api/payment", require("./routes/PaymentRouter"));
+app.use("/api", require("./routes/ClientRouter"));
 
 // conexión BBDD
 //antes definir vuestra url en el archivo .env
