@@ -24,7 +24,9 @@ app.use(express.urlencoded());
 // app.use("/api", AuthorRouter);
 // app.use("/api", BookRouter);
 
-app.use("/api", require("./routes/ClientRouter"));
+app.use("/api/clients", require("./routes/ClientRouter"));
+app.use("/api/membership", require("./routes/MembershipRouter"));
+app.use("/api/payment", require("./routes/PaymentRouter"));
 
 // conexión BBDD
 //antes definir vuestra url en el archivo .env
