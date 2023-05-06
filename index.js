@@ -24,9 +24,15 @@ app.use(express.urlencoded());
 // app.use("/api", AuthorRouter);
 // app.use("/api", BookRouter);
 
-app.use("/api/clients", require("./routes/ClientRouter"));
+app.use("/api/client", require("./routes/ClientRouter"));
 app.use("/api/membership", require("./routes/MembershipRouter"));
 app.use("/api/payment", require("./routes/PaymentRouter"));
+app.use("/api/privateroom", require("./routes/PrivateRoomRouter"));
+app.use("/api/reservation", require("./routes/ReservationRouter"));
+app.use("/api/activemembership", require("./routes/ActiveMembershipRouter"));
+app.use("/api/hours", require("./routes/HoursRouter"));
+
+
 
 // conexión BBDD
 //antes definir vuestra url en el archivo .env

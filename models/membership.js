@@ -1,3 +1,4 @@
+const { Decimal128 } = require("mongodb");
 const mongoose = require("mongoose")
 
 const MembershipSchema = new mongoose.Schema({
@@ -6,7 +7,7 @@ const MembershipSchema = new mongoose.Schema({
         require: true
     },
     price:{
-        type:String,
+        type:Decimal128,
         require: true
     },
     type:{

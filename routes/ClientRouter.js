@@ -3,7 +3,7 @@ const Client = require("../models/client");
 const ClientRouter = express.Router();
 
 
-ClientRouter.post("/client", async (req, res) => {
+ClientRouter.post("/", async (req, res) => {
   try {
     const { full_name, phone, email, company_name, cuit, description, assistance } = req.body;
 

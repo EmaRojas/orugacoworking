@@ -1,32 +1,30 @@
 const express = require("express");
-const Payment = require("../models/payment")
-const PaymentRouter = express.Router();
+const PrivateRoom = require("../models/private_room")
+const PrivateRoomRouter = express.Router();
 
 
-PaymentRouter.post("/", async (req,res) => {
+PrivateRoomRouter.post("/", async (req,res) => {
     try {
-        const {total, means_of_payment, paid, status} = req.body;
+        const {name, capacity} = req.body;
 
-        if (!total || ! means_of_payment || !paid || !status) {
+        if (!name || !capacity) {
             return res.status(400).send({
                 success:false,
                 message: "Faltan datos de completar"
             });
         }
 
-        let payment = new Payment({
-            means_of_payment,
-            total,
-            paid,
-            status
+        let privateRoom = new PrivateRoom({
+           name,
+           capacity
         });
 
-        await payment.save();
+        await privateRoom.save();
 
         return res.status(200).send({
             success:true,
-            message: "Pago creado",
-            payment
+            message: "Sala creada",
+            privateRoom
         })
     } catch (err) {
         return res.status(500).send({
@@ -37,36 +35,36 @@ PaymentRouter.post("/", async (req,res) => {
 });
 
 //get all
-PaymentRouter.get("/", async(req,res) => {
-    let payments = await Payment.find({});
+PrivateRoomRouter.get("/", async(req,res) => {
+    let privateRooms = await PrivateRoom.find({});
     return res.status(200).send({
         success:true,
-        payments
+        privateRooms
     });
 });
 
 //update
-PaymentRouter.put("/update/:id", async (req, res) => {
+PrivateRoomRouter.put("/update/:id", async (req, res) => {
     console.log(req.body);
     const { id } = req.params;
     const { ...data} = req.body;
   
-    let payment = await Payment.findByIdAndUpdate(id, data, {new:true});
+    let privateRoom = await PrivateRoom.findByIdAndUpdate(id, data, {new:true});
   
     res.status(200).send({
       success:true,
-      message: "Pago modificado!",
-      payment
+      message: "Sala modificada!",
+      privateRoom
     });
   });
 
-  PaymentRouter.delete("/delete/:id", async (req, res) => {
+  PrivateRoomRouter.delete("/delete/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      await Payment.findByIdAndDelete(id);
+      await PrivateRoom.findByIdAndDelete(id);
       res.status(200).send({
         success: true,
-        message: "Pago eliminado!",
+        message: "Sala eliminada!",
       });
     } catch (error) {
       res.status(500).send({
@@ -78,4 +76,4 @@ PaymentRouter.put("/update/:id", async (req, res) => {
   
   
 
-module.exports = PaymentRouter;
+module.exports = PrivateRoomRouter;

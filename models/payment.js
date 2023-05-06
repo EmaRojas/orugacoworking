@@ -1,3 +1,4 @@
+const { Decimal128 } = require("mongodb");
 const mongoose = require("mongoose")
 
 const PaymentSchema = new mongoose.Schema({
@@ -6,11 +7,11 @@ const PaymentSchema = new mongoose.Schema({
         require: true
     },
     total:{
-        type:String,
+        type:Decimal128,
         requiere:true
     },
     paid:{
-        type:String,
+        type:Decimal128,
         require:true
     },
     status:{
