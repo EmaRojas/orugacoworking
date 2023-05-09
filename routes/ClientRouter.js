@@ -1,20 +1,12 @@
 const express = require("express");
-const Client = require("../models/client")
+const Client = require("../models/client");
 const ClientRouter = express.Router();
 
 
-ClientRouter.get("/", async (req, res) => {
-  let clients = await Client.find({})
-  return res.status(200).send({
-    success: true,
-    clients,
-  });
-});
-
-ClientRouter.post("/client", async (req, res) => {
+ClientRouter.post("/", async (req, res) => {
   try {
     const { full_name, phone, email, company_name, cuit, description, assistance } = req.body;
-    console.log(req.body);
+
     if (!full_name || !phone || !email || !company_name || !cuit || !description || !assistance) {
       return res.status(400).send({
         success: false,
@@ -32,7 +24,7 @@ ClientRouter.post("/client", async (req, res) => {
       assistance
     });
 
-    await client.save()
+    await client.save();
 
     return res.status(200).send({
       success: true,
