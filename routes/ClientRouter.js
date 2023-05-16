@@ -50,7 +50,7 @@ ClientRouter.get("/", async (req, res) => {
 });
 
 //update
-ClientRouter.put(":id", async (req, res) => {
+ClientRouter.put("/:id", async (req, res) => {
   console.log(req.body);
   const { id } = req.params;
   const { ...data} = req.body;
@@ -64,7 +64,7 @@ ClientRouter.put(":id", async (req, res) => {
   });
 });
 
-ClientRouter.delete(":id", async (req, res) => {
+ClientRouter.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     await Client.findByIdAndDelete(id);
