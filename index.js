@@ -2,13 +2,14 @@
 
 const express = require("express");
 const app = express();
+const cors = require('cors');
 
 // npm i dotenv - dependencia para gestionar las variables de entorno
 // require("dotenv").config();
 
 //npm i mongose - dependencia para conectar MongoDB y poder gestionar los documentos de la BBDD
 const mongoose = require("mongoose");
-
+app.use(cors());
 //npm i cors - para desplegar datos en front
 // app.use(cors())
 
