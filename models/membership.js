@@ -7,7 +7,7 @@ const MembershipSchema = new mongoose.Schema({
         require: true
     },
     price:{
-        type:Decimal128,
+        type:String,
         require: true
     },
     type:{
