@@ -19,8 +19,12 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.17.3",
+    "express-jsdoc-swagger": "^1.8.0",
+    "express-oas-validator": "^3.0.1",
     "mongodb": "5.3",
     "mongoose": "^7.1.0",
-    "nodemon": "^2.0.15"
+    "nodemon": "^2.0.15",
+    "swagger-jsdoc": "5.0.1",
+    "swagger-ui-express": "^4.6.3"
   }
 }

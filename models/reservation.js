@@ -1,18 +1,25 @@
 const mongoose = require("mongoose")
 
 const ReservationSchema = new mongoose.Schema({
-    client:{
+    clientID:{
         type: mongoose.Schema.Types.ObjectId,
         ref:"Client"
     },
-    privateRoom:{
+    priceRoomID:{
         type: mongoose.Schema.Types.ObjectId,
-        ref:"PrivateRoom"
+        ref:"PriceRoom"
     },
-    payment:{
+    roomID:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref:"Room"
+    },
+    paymentID:{
         type: mongoose.Schema.Types.ObjectId,
         ref:"Payment"
     },    
+    date:{
+        type: mongoose.Schema.Types.Date
+    }
 })
 
 module.exports = mongoose.model("Reservation", ReservationSchema);

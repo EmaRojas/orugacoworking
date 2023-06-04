@@ -14,6 +14,10 @@ const MembershipSchema = new mongoose.Schema({
         type:String,
         require: true
     },
+    hours:{
+        type:String,
+        require: true
+    },
 
 });
 

@@ -1,98 +1,113 @@
 const express = require("express");
-const Membership = require("../models/membership")
+const membershipSchema = require("../models/membership");
 const MembershipRouter = express.Router();
 
-//get all memberships
-MembershipRouter.get("/", async (req, res) => {
-    let memberships = await Membership.find({})
-    return res.status(200).send({
-        success: true,
-        memberships,
+
+/**
+ * @typedef {object} Membership
+ * @property {string} name.required
+ * @property {string} price.required
+ * @property {string} type.required
+ * @property {string} hours.required
+ */
+/**
+ * POST /api/v1/membership
+ * @tags Membership
+ * @summary Crear nueva membresia
+ * @param {Membership} request.body.required
+ * @return {object} 200 - song response
+ */
+MembershipRouter.post("/", async (req, res) => {
+  const membership = membershipSchema(req.body);
+
+  if (!membership.name || !membership.price || !membership.type || !membership.hours) {
+    return res.status(400).send({
+      success: false,
+      message: "Faltan datos de completar"
     });
-    //res.json({ user: 'geek' });
+  }
+
+  membership
+    .save()
+    .then((data) => res.status(200).send({
+      success: true,
+      data
+    }))
+    .catch((error) => res.status(500).send({
+      success: false,
+      message: error.message,
+    }));
 });
 
-//get membership by id
-MembershipRouter.get("/:id", async (req, res) => {
-    const { id } = req.params;
-  
-    let membership = await Membership.findById(id);
-  
-    if (!membership) res.status(404).send({
-        success:false,
-        message: "Membresía no encontrada"
-    });
-
-    else res.status(200).send({
-      success:true,
-      message: "Membresía obtenida",
-      membership
-    });
+//get all
+/**
+ * GET /api/v1/membership
+ * @tags Membership
+ * @summary Obtiene todos las membresias
+ * @return {string} 200 - success response
+ * @return {object} 400 - Bad request response
+ */
+MembershipRouter.get("/", async (req, res) => {
+  let memberships = await membershipSchema.find({});
+  return res.status(200).send({
+    success: true,
+    memberships
   });
+});
 
-//create membership
-MembershipRouter.post("/", async (req, res) => {
-    try {
-      const { name, price, type } = req.body;
-      console.log(req.body);
-      if (!name || !price || !type) {
-        return res.status(400).send({
-          success: false,
-          message: "Faltan datos de completar"
-        });
-      }
-  
-      let membership = new Membership({
-        name,
-        price,
-        type
-      });
-  
-      await membership.save()
-  
-      return res.status(200).send({
-        success: true,
-        message: "Membresía creada",
-        membership
-      });
-  
-    } catch (err) {
-      return res.status(500).send({
-        success: false,
-        message: err.message
-      });
-    }
-  });
-
-//update membership
+//update
+/**
+ * @typedef {object} Membership
+ * @property {string} name.required
+ * @property {string} price.required
+ * @property {string} type.required
+ * @property {string} hours.required
+ */
+/**
+ * PUT /api/v1/membership/{id}
+ * @tags Membership
+ * @summary Actualizar membresia
+ * @param {string} id.path - id
+ * @param {Membership} request.body.required
+ * @return {string} 200 - success response
+ */
 MembershipRouter.put("/:id", async (req, res) => {
-    const { id } = req.params;
-    const { ...data} = req.body;
-  
-    let membership = await Membership.findByIdAndUpdate(id, data, {new:true});
-  
-    res.status(200).send({
-      success:true,
-      message: "Membresía modificada!",
-      membership
-    });
-  });
+  const { id } = req.params;
+  const { ...data } = req.body;
 
-//delete membership
-MembershipRouter.delete("/:id", async (req, res) => {
-    try {
-      const { id } = req.params;
-      await Membership.findByIdAndDelete(id);
-      res.status(200).send({
-        success: true,
-        message: "Membersía eliminada!",
-      });
-    } catch (error) {
-      res.status(500).send({
-        success: false,
-        message: error.message,
-      });
-    }
+  let membership = await membershipSchema.findByIdAndUpdate(id, data, { new: true });
+
+  res.status(200).send({
+    success: true,
+    message: "Membresía modificada!",
+    membership
   });
-  
+});
+
+/**
+ * delete /api/v1/membership/{id}
+ * @tags Membership
+ * @summary Eliminar membresia
+ * @param {string} id.path - id
+ * @return {string} 200 - success response
+ */
+MembershipRouter.delete("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    await membershipSchema.findByIdAndDelete(id);
+    res.status(200).send({
+      success: true,
+      message: "Membresía eliminada!",
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+
 module.exports = MembershipRouter
+
+

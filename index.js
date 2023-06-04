@@ -1,38 +1,65 @@
-//dependenciass instaladas en este proyecto : express, mongoose, nodemon -D, dotenv
-
 const express = require("express");
+const mongoose = require("mongoose");
+require("dotenv").config();
+
+//swagger
+//https://brikev.github.io/express-jsdoc-swagger-docs/
+const expressJSDocSwagger = require('express-jsdoc-swagger');
+
+const options = {
+  info: {
+    version: '1.0.0',
+    title: 'Oruga',
+  },
+  security: {
+    BasicAuth: {
+      type: 'http',
+      scheme: 'basic',
+    },
+  },
+  baseDir: __dirname,
+  // Glob pattern to find your jsdoc files (multiple patterns can be added in an array)
+  filesPattern: './routes/*.js',
+  // URL where SwaggerUI will be rendered
+  swaggerUIPath: '/api-docs',
+  // Expose OpenAPI UI
+  exposeSwaggerUI: true,
+  // Expose Open API JSON Docs documentation in `apiDocsPath` path.
+  exposeApiDocs: false,
+  // Open API JSON Docs endpoint.
+  apiDocsPath: '/v1/api-docs',
+  // Set non-required fields as nullable by default
+  notRequiredAsNullable: false,
+  // You can customize your UI options.
+  // you can extend swagger-ui-express config. You can checkout an example of this
+  // in the `example/configuration/swaggerOptions.js`
+  swaggerUiOptions: {},
+  // multiple option in case you want more that one instance
+  multiple: true,
+};
+
+
 const app = express();
 const cors = require('cors');
-
-// npm i dotenv - dependencia para gestionar las variables de entorno
-// require("dotenv").config();
-
-//npm i mongose - dependencia para conectar MongoDB y poder gestionar los documentos de la BBDD
-const mongoose = require("mongoose");
 app.use(cors());
-//npm i cors - para desplegar datos en front
-// app.use(cors())
-
-// hay que importarlos siempre y cuando utilizamos directamente el router
-// const AuthorRouter = require("./router/AuthorRouter");
-// const BookRouter = require("./router/BookRouter");
-
-// sintaxis para poder gestionar los datos por req.body
 app.use(express.json({ extended: true }));
 app.use(express.urlencoded());
 
-//ENRUTADO para la carpeta ROUTER
-// app.use("/api", AuthorRouter);
-// app.use("/api", BookRouter);
+expressJSDocSwagger(app)(options);
 
-app.use("/api/client", require("./routes/ClientRouter"));
-app.use("/api/membership", require("./routes/MembershipRouter"));
-app.use("/api/payment", require("./routes/PaymentRouter"));
-app.use("/api/privateroom", require("./routes/PrivateRoomRouter"));
-app.use("/api/reservation", require("./routes/ReservationRouter"));
-app.use("/api/activemembership", require("./routes/ActiveMembershipRouter"));
-app.use("/api/hours", require("./routes/HoursRouter"));
-
+/**
+ * GET /api/v1/
+ * @summary This is the summary of the endpoint
+ * @return {object} 200 - success response
+ */
+app.use("/api/v1/client", require("./routes/ClientRouter"));
+app.use("/api/v1/membership", require("./routes/MembershipRouter"));
+app.use("/api/v1/room", require("./routes/RoomRouter"));
+app.use("/api/v1/payment", require("./routes/PaymentRouter"));
+app.use("/api/v1/priceRoom", require("./routes/PriceRoomRouter"));
+app.use("/api/v1/reservation", require("./routes/ReservationRouter"));
+app.use("/api/v1/membershipByUser", require("./routes/MembershipByUserRouter"));
+app.use("/api/v1/usage", require("./routes/UsageRouter"));
 
 
 // conexión BBDD
@@ -51,4 +78,3 @@ mongoose
 app.listen(3000, () => {
   console.log("Servidor a la escucha en el puerto 3000");
 });
-// const url = "mongodb+srv://facunquintana:nS3XIqH6bdQEyqtL@orugacoworking.gyoky1q.mongodb.net/?retryWrites=true&w=majority";
