@@ -47,7 +47,7 @@ PriceRoomRouter.post("/", async (req, res) => {
  * @return {object} 400 - Bad request response
  */
 PriceRoomRouter.get("/", async (req, res) => {
-  let priceRooms = await priceRoomSchema.find({});
+  let priceRooms = await priceRoomSchema.find({}).populate('roomID');
   return res.status(200).send({
     success: true,
     priceRooms
