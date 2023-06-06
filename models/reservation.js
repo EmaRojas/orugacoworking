@@ -12,13 +12,9 @@ const ReservationSchema = new mongoose.Schema({
     roomID:{
         type: mongoose.Schema.Types.ObjectId,
         ref:"Room"
-    },
-    paymentID:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref:"Payment"
-    },    
+    },  
     date:{
-        type: mongoose.Schema.Types.Date
+        type: Date
     }
 })
 

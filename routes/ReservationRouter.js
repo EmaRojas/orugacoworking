@@ -1,5 +1,7 @@
 const express = require("express");
 const ReservationSchema = require("../models/reservation");
+const PaymentSchema = require("../models/payment");
+
 const ReservationRouter = express.Router();
 
 
@@ -8,7 +10,6 @@ const ReservationRouter = express.Router();
  * @property {string} clientID.requiere
  * @property {string} roomID.required
  * @property {string} priceRoomID
- * @property {string} paymentID
  * @property {string} date.required
  */
 /**
@@ -21,6 +22,8 @@ const ReservationRouter = express.Router();
 ReservationRouter.post("/", async (req, res) => {
   const reservation = ReservationSchema(req.body);
 
+  console.log(req.body.priceRoomID);
+
   if (!reservation.clientID || !reservation.roomID) {
     return res.status(400).send({
       success: false,
@@ -28,7 +31,7 @@ ReservationRouter.post("/", async (req, res) => {
     });
   }
 
-  reservation
+  await reservation
     .save()
     .then((data) => res.status(200).send({
       success: true,
@@ -38,6 +41,19 @@ ReservationRouter.post("/", async (req, res) => {
       success: false,
       message: error.message,
     }));
+
+    // Crear el objeto de pago
+    const payment = new PaymentSchema({
+      reservationID: reservation._id,
+      means_of_payment: req.body.means_of_payment,
+      total: req.body.total,
+      paid: req.body.paid,
+      status:  req.body.status
+    });
+
+    // Guardar el pago en la base de datos
+    await payment.save();
+
 });
 
 //get all

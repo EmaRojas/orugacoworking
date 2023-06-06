@@ -7,18 +7,21 @@ const PaymentSchema = new mongoose.Schema({
         require: true
     },
     total:{
-        type:Decimal128,
+        type:String,
         requiere:true
     },
     paid:{
-        type:Decimal128,
+        type:String,
         require:true
     },
     status:{
         type:String,
         require:true
+    },
+    reservationID:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref:"Reservation"
     }
-
 });
 
 module.exports = mongoose.model("Payment", PaymentSchema);
