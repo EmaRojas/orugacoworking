@@ -31,29 +31,36 @@ ReservationRouter.post("/", async (req, res) => {
     });
   }
 
-  await reservation
-    .save()
-    .then((data) => res.status(200).send({
-      success: true,
-      data
-    }))
-    .catch((error) => res.status(500).send({
-      success: false,
-      message: error.message,
-    }));
+      // Crear el objeto de pago
+      const payment = new PaymentSchema({
+        means_of_payment: req.body.means_of_payment,
+        total: req.body.total,
+        paid: req.body.paid,
+        status:  req.body.status
+      });
+  
+      // Guardar el pago en la base de datos
+      await payment.save();
 
-    // Crear el objeto de pago
-    const payment = new PaymentSchema({
-      reservationID: reservation._id,
-      means_of_payment: req.body.means_of_payment,
-      total: req.body.total,
-      paid: req.body.paid,
-      status:  req.body.status
-    });
+      // Crear el objeto de reservation
+      const reserva = new ReservationSchema({
+        clientID: req.body.clientID,
+        priceRoomID: req.body.priceRoomID,
+        roomID: req.body.roomID,
+        date: req.body.date,
+        paymentID: payment._id
+      });
 
-    // Guardar el pago en la base de datos
-    await payment.save();
-
+      // Guardar la reserva en la base de datos
+      await reserva.save()
+      .then((data) => res.status(200).send({
+       success: true,
+       data
+      }))
+      .catch((error) => res.status(500).send({
+       success: false,
+       message: error.message,
+      }));
 });
 
 //get all

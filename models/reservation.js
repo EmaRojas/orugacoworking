@@ -15,6 +15,10 @@ const ReservationSchema = new mongoose.Schema({
     },  
     date:{
         type: Date
+    },
+    paymentID:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref:"Payment"
     }
 })
 

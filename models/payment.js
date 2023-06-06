@@ -17,10 +17,6 @@ const PaymentSchema = new mongoose.Schema({
     status:{
         type:String,
         require:true
-    },
-    reservationID:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref:"Reservation"
     }
 });
 
