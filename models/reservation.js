@@ -13,8 +13,14 @@ const ReservationSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref:"Room"
     },  
-    date:{
+    dateTime:{
         type: Date
+    },
+    date:{
+        type: string
+    },
+    time:{
+        type: string
     },
     paymentID:{
         type: mongoose.Schema.Types.ObjectId,
