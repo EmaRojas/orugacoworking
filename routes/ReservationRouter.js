@@ -36,7 +36,7 @@ ReservationRouter.post("/", async (req, res) => {
         means_of_payment: req.body.means_of_payment,
         total: req.body.total,
         paid: req.body.paid,
-        status:  req.body.status
+        status: 'Creado'
       });
   
       // Guardar el pago en la base de datos
