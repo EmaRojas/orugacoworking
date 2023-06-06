@@ -12,7 +12,7 @@ const PriceRoomSchema = new mongoose.Schema({
         require:true
     },
     price:{
-        type: mongoose.Schema.Types.Decimal128,
+        type: String,
         require: true
     }
 
