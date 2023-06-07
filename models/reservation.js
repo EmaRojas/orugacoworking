@@ -17,10 +17,10 @@ const ReservationSchema = new mongoose.Schema({
         type: Date
     },
     date:{
-        type: string
+        type:String
     },
     time:{
-        type: string
+        type:String
     },
     paymentID:{
         type: mongoose.Schema.Types.ObjectId,
