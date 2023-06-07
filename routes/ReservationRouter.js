@@ -47,7 +47,9 @@ ReservationRouter.post("/", async (req, res) => {
         clientID: req.body.clientID,
         priceRoomID: req.body.priceRoomID,
         roomID: req.body.roomID,
+        dateTime: req.body.dateTime,
         date: req.body.date,
+        time: req.body.time,
         paymentID: payment._id
       });
 
