@@ -74,7 +74,7 @@ ReservationRouter.post("/", async (req, res) => {
  * @return {object} 400 - Bad request response
  */
 ReservationRouter.get("/", async (req, res) => {
-  let reservations = await reservationSchema.find({}).populate('clientID').populate('clientID').populate('paymentID').populate('roomID');
+  let reservations = await reservationSchema.find({}).populate('clientID').populate('priceRoomID').populate('paymentID').populate('roomID');
   return res.status(200).send({
     success: true,
     reservations
