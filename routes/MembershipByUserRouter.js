@@ -19,25 +19,44 @@ const MembershipByUserRouter = express.Router();
  * @return {object} 200 - song response
  */
 MembershipByUserRouter.post("/", async (req, res) => {
-  const membershipByUser = MembershipByUserSchema(req.body);
 
-  if (!membershipByUser.clientID || !membershipByUser.membershipID || !membershipByUser.paymentID || !membershipByUser.startDate || !membershipByUser.endDate) {
+  if (!req.body.clientID || !req.body.membershipID) {
     return res.status(400).send({
       success: false,
       message: "Faltan datos de completar"
     });
   }
 
-  membershipByUser
-    .save()
-    .then((data) => res.status(200).send({
-      success: true,
-      data
-    }))
-    .catch((error) => res.status(500).send({
-      success: false,
-      message: error.message,
-    }));
+      // Crear el objeto de pago
+      const payment = new PaymentSchema({
+        means_of_payment: req.body.means_of_payment,
+        total: req.body.total,
+        paid: req.body.paid,
+        status: 'Creado'
+      });
+  
+      // Guardar el pago en la base de datos
+      await payment.save();
+
+      // Crear el objeto de reservation
+      const membershipByUser = new MembershipByUserSchema({
+        clientID: req.body.clientID,
+        membershipID: req.body.membershipID,
+        startDate: req.body.startDate,
+        endDate: req.body.endDate,
+        paymentID: payment._id
+      });
+
+      await membershipByUser.save()
+      .then((data) => res.status(200).send({
+       success: true,
+       data
+      }))
+      .catch((error) => res.status(500).send({
+       success: false,
+       message: error.message,
+      }));
+
 });
 
 //get all
