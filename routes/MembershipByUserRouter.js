@@ -1,6 +1,7 @@
 const express = require("express");
 const MembershipByUserSchema = require("../models/membershipByUser");
 const MembershipByUserRouter = express.Router();
+const PaymentSchema = require("../models/payment");
 
 
 /**
