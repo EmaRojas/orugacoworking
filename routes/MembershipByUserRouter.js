@@ -32,7 +32,7 @@ MembershipByUserRouter.post("/", async (req, res) => {
       const payment = new PaymentSchema({
         means_of_payment: req.body.means_of_payment,
         total: req.body.total,
-        paid: req.body.paid,
+        paid: req.body.total,
         status: 'Creado'
       });
   
