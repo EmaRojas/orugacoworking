@@ -25,9 +25,6 @@ const MembershipByUserSchema = new mongoose.Schema({
         type: Date,
         require: true
     },
-    endDateString:{
-        type:String
-    },
 });
 
 module.exports = mongoose.model("MembershipByUser", MembershipByUserSchema);
