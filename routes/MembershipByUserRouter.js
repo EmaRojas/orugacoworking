@@ -45,6 +45,7 @@ MembershipByUserRouter.post("/", async (req, res) => {
         membershipID: req.body.membershipID,
         startDate: req.body.startDate,
         endDate: req.body.endDate,
+        endDateString: req.body.endDateString,
         paymentID: payment._id
       });
 

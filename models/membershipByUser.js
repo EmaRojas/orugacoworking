@@ -18,12 +18,15 @@ const MembershipByUserSchema = new mongoose.Schema({
         require: true
     },
     startDate:{
-        type: mongoose.Schema.Types.Date,
+        type: Date,
         require: true
     },
     endDate:{
-        type: mongoose.Schema.Types.Date,
+        type: Date,
         require: true
+    },
+    endDateString:{
+        type:String
     },
 });
 
