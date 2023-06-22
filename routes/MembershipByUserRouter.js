@@ -43,7 +43,6 @@ MembershipByUserRouter.post("/", async (req, res) => {
       const membershipByUser = new MembershipByUserSchema({
         clientID: req.body.clientID,
         membershipID: req.body.membershipID,
-        startDate: req.body.startDate,
         endDate: req.body.endDate,
         paymentID: payment._id
       });

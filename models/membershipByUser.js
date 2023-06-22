@@ -17,10 +17,6 @@ const MembershipByUserSchema = new mongoose.Schema({
         ref:"Payment",
         require: true
     },
-    startDate:{
-        type: Date,
-        require: true
-    },
     endDate:{
         type: Date,
         require: true
