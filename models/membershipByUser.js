@@ -25,6 +25,10 @@ const MembershipByUserSchema = new mongoose.Schema({
         type: Date,
         require: true
     },
+    expired: {
+        type: Boolean,
+        default: false
+    },
 });
 
 module.exports = mongoose.model("MembershipByUser", MembershipByUserSchema);
