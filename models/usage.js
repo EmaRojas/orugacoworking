@@ -6,18 +6,12 @@ const UsageSchema = new mongoose.Schema({
         ref:"MembershipByUser",
         require: true
     },
-    hour:{
-        type:String,
-        require:true
+    startDateTime:{
+        type:Date
     },
-    date:{
-        type: mongoose.Schema.Types.Date,
-        require: true
-    },
-    company_name:{
-        type: String,
-    },
-
+    time:{
+        type: Number
+    }
 });
 
 module.exports = mongoose.model("Usage", UsageSchema);

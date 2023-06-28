@@ -21,9 +21,14 @@ const MembershipByUserSchema = new mongoose.Schema({
         type: Date,
         require: true
     },
-    expired: {
-        type: Boolean,
-        default: false
+    status: {
+        type: String,
+    },
+    total_hours: {
+        type: Number,
+    },
+    remaining_hours: {
+        type: Number,
     },
 });
 
