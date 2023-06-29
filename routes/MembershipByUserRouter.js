@@ -78,6 +78,40 @@ MembershipByUserRouter.get("/", async (req, res) => {
   });
 });
 
+
+/**
+ * @typedef {object} MembershipByUser
+ * @property {string} hours.required
+ */
+/**
+ * POST /api/v1/membershipByUser/useHours
+ * @tags MembershipByUser
+ * @summary Crear nueva membresía por usuario
+ * @param {MembershipByUser} request.body.required
+ * @return {object} 200 - song response
+ */
+MembershipByUserRouter.post("/useHours/:id", async (req, res) => {
+  const { id } = req.params;
+  const { hrs } = req.body.hours * 3600;
+
+  let membershipByUser = await MembershipByUser.findById(id)
+  .populate('clientID') // Opcional: Puedes utilizar populate para rellenar las referencias con los objetos relacionados
+  .populate('membershipID')
+  .populate('paymentID');
+
+  membershipByUser.remaining_hours -= hrs;
+
+  // Guarda el objeto actualizado en la base de datos
+  membershipByUser.save();
+  return res.status(200).send({
+    success: true,
+    membershipByUser
+  });
+
+
+});
+
+
 //update
 /**
  * @typedef {object} MembershipByUser
