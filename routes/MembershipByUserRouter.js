@@ -92,24 +92,46 @@ MembershipByUserRouter.get("/", async (req, res) => {
  * @return {object} 200 - song response
  */
 MembershipByUserRouter.post("/useHours/:id", async (req, res) => {
-  const { id } = req.params;
-  const { hrs } = req.body.hours * 3600;
 
-  let membershipByUser = await MembershipByUserSchema.findById(id)
-  .populate('clientID') // Opcional: Puedes utilizar populate para rellenar las referencias con los objetos relacionados
-  .populate('membershipID')
-  .populate('paymentID');
+  try {
+    const { id } = req.params;
+    const { hours } = req.body;
 
-  membershipByUser.remaining_hours -= hrs;
+    const hrs = parseFloat(hours) * 3600;
 
-  // Guarda el objeto actualizado en la base de datos
-  membershipByUser.save();
-  return res.status(200).send({
-    success: true,
-    membershipByUser
-  });
+    let membershipByUser = await MembershipByUserSchema.findById(id);
 
+    if (!membershipByUser) {
+      return res.status(404).send({
+        success: false,
+        message: "MembershipByUser not found"
+      });
+    }
 
+    if (membershipByUser.remaining_hours === 0 || hrs > membershipByUser.remaining_hours) {
+      return res.status(400).send({
+        success: false,
+        message: "Invalid number of hours"
+      });
+    }
+
+    membershipByUser.remaining_hours -= hrs;
+
+    // Guarda el objeto actualizado en la base de datos
+    await membershipByUser.save();
+
+    return res.status(200).send({
+      success: true,
+      membershipByUser
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+  
 });
 
 
