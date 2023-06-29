@@ -97,7 +97,10 @@ MembershipByUserRouter.post("/useHours/:id", async (req, res) => {
     const { id } = req.params;
     const { hours } = req.body;
 
-    const hrs = parseFloat(hours) * 3600;
+    const [hoursParse, minutesParse] = hours.split('.'); // Dividir la cadena en horas y minutos
+    const hrs = parseFloat(hoursParse) * 3600; // Convertir las horas en segundos
+    const mins = parseFloat(minutesParse) * 60; // Convertir los minutos en segundos
+    const totalSeconds = hrs + mins; // Calcular el total de segundos
 
     let membershipByUser = await MembershipByUserSchema.findById(id);
 
@@ -115,7 +118,7 @@ MembershipByUserRouter.post("/useHours/:id", async (req, res) => {
       });
     }
 
-    membershipByUser.remaining_hours -= hrs;
+    membershipByUser.remaining_hours -= totalSeconds;
 
     // Guarda el objeto actualizado en la base de datos
     await membershipByUser.save();
