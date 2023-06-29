@@ -84,9 +84,10 @@ MembershipByUserRouter.get("/", async (req, res) => {
  * @property {string} hours.required
  */
 /**
- * POST /api/v1/membershipByUser/useHours
+ * POST /api/v1/membershipByUser/useHours/{id}
  * @tags MembershipByUser
- * @summary Crear nueva membresía por usuario
+ * @summary Descontar horas
+ * @param {string} id.path - id
  * @param {MembershipByUser} request.body.required
  * @return {object} 200 - song response
  */
