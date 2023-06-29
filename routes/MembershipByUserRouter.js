@@ -95,9 +95,11 @@ MembershipByUserRouter.post("/useHours/:id", async (req, res) => {
 
   try {
     const { id } = req.params;
-    const { hours } = req.body;
 
-    const [hoursParse, minutesParse] = hours.split('.'); // Dividir la cadena en horas y minutos
+    const hoursString = req.body.hours;
+    
+    console.log(hoursString);
+    const [hoursParse, minutesParse] = hoursString.split('.'); // Dividir la cadena en horas y minutos
     const hrs = parseFloat(hoursParse) * 3600; // Convertir las horas en segundos
     const mins = parseFloat(minutesParse) * 60; // Convertir los minutos en segundos
     const totalSeconds = hrs + mins; // Calcular el total de segundos
@@ -111,7 +113,7 @@ MembershipByUserRouter.post("/useHours/:id", async (req, res) => {
       });
     }
 
-    if (membershipByUser.remaining_hours === 0 || hrs > membershipByUser.remaining_hours) {
+    if (membershipByUser.remaining_hours === 0 || totalSeconds > membershipByUser.remaining_hours) {
       return res.status(400).send({
         success: false,
         message: "Invalid number of hours"
