@@ -92,20 +92,23 @@ MembershipByUserRouter.get("/", async (req, res) => {
  * @return {object} 200 - song response
  */
 MembershipByUserRouter.post("/useHours/:id", async (req, res) => {
-
   try {
     const { id } = req.params;
-
     const hoursString = req.body.hours;
-    
+
     let totalSeconds = 0;
 
     if (!isNaN(hoursString)) {
-      totalSeconds = parseFloat(hoursString) * 3600; // Convertir a segundos si es un número
+      totalSeconds = parseInt(hoursString) * 3600; // Convertir a segundos si es un número entero
     } else {
-      const [hours, minutes] = hoursString.split('.'); // Dividir la cadena en horas y minutos
-      const hrs = parseFloat(hours) * 3600; // Convertir las horas en segundos
-      const mins = parseFloat(minutes || 0) * 60; // Convertir los minutos en segundos (si no se proporciona, se asume 0)
+      const [hours, minutes] = hoursString.split('.');
+      const hrs = parseInt(hours) * 3600; // Convertir las horas en segundos
+
+      let mins = 0;
+      if (minutes) {
+        mins = Math.round((parseInt(minutes) * 60) / 10) * 10; // Convertir los minutos en segundos y redondear a múltiplos de 10
+      }
+
       totalSeconds = hrs + mins; // Calcular el total de segundos
     }
 
@@ -141,9 +144,7 @@ MembershipByUserRouter.post("/useHours/:id", async (req, res) => {
       message: "Internal server error"
     });
   }
-  
 });
-
 
 //update
 /**
