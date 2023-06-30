@@ -94,23 +94,24 @@ MembershipByUserRouter.get("/", async (req, res) => {
 MembershipByUserRouter.post("/useHours/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const hoursString = req.body.hours;
-
-    let totalSeconds = 0;
-
-    if (!isNaN(hoursString)) {
-      totalSeconds = parseInt(hoursString) * 3600; // Convertir a segundos si es un número entero
-    } else {
-      const [hours, minutes] = hoursString.split('.');
-      const hrs = parseInt(hours) * 3600; // Convertir las horas en segundos
-
-      let mins = 0;
-      if (minutes) {
-        mins = Math.round((parseInt(minutes) * 60) / 10) * 10; // Convertir los minutos en segundos y redondear a múltiplos de 10
-      }
-
-      totalSeconds = hrs + mins; // Calcular el total de segundos
+    let { hours } = req.body;
+    
+    // Convertir horas y minutos a segundos
+    function convertToSeconds(hours, minutes) {
+      const totalSeconds = (hours * 3600) + (minutes * 60);
+      return totalSeconds;
     }
+
+    
+
+    const decimalNumber = parseFloat(hours);
+
+    const integerPart = Math.floor(decimalNumber);
+
+    const decimalPart = (decimalNumber % 1).toFixed(2);
+    const decimalDigits = decimalPart.substring(2);
+
+    const totalSeconds = convertToSeconds(integerPart, decimalDigits);
 
     let membershipByUser = await MembershipByUserSchema.findById(id);
 
@@ -145,6 +146,7 @@ MembershipByUserRouter.post("/useHours/:id", async (req, res) => {
     });
   }
 });
+
 
 //update
 /**
