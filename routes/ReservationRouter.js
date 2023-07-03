@@ -134,7 +134,45 @@ ReservationRouter.delete("/:id", async (req, res) => {
   }
 });
 
+//get today reservations
+/**
+ * GET /api/v1/reservation/today
+ * @tags Reservation
+ * @summary Obtiene todas las reservas del dia
+ * @return {string} 200 - success response
+ * @return {object} 400 - Bad request response
+ */
+ReservationRouter.get("/today", async (req, res) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Establece las horas, minutos, segundos y milisegundos a cero para obtener el comienzo del día actual
+  
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1); // Establece la fecha al día siguiente para obtener el final del día actual
+  
+  try {
+  const reservations = await ReservationSchema.find({
+  dateTime: {
+  $gte: today,
+  $lt: tomorrow
+  }
+  })
+  .populate("clientID")
+  .populate("priceRoomID")
+  .populate("paymentID")
+  .populate("roomID");
 
+  return res.status(200).send({
+    success: true,
+    reservations
+  });
+
+} catch (error) {
+  return res.status(500).send({
+  success: false,
+  message: "Error obteniendo reservas"
+  });
+  }
+  });
 
 module.exports = ReservationRouter
 
