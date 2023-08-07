@@ -22,6 +22,9 @@ const ReservationSchema = new mongoose.Schema({
     time:{
         type:String
     },
+    endTime:{
+        type:String
+    },
     paymentID:{
         type: mongoose.Schema.Types.ObjectId,
         ref:"Payment"

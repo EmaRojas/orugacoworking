@@ -50,6 +50,7 @@ ReservationRouter.post("/", async (req, res) => {
         dateTime: req.body.dateTime,
         date: req.body.date,
         time: req.body.time,
+        endTime: req.body.endTime,
         paymentID: payment._id
       });
 
