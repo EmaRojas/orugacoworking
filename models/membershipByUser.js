@@ -21,6 +21,9 @@ const MembershipByUserSchema = new mongoose.Schema({
         type: Date,
         require: true
     },
+    created:{
+        type: Date,
+    },
     status: {
         type: String,
     },

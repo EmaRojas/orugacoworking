@@ -44,6 +44,7 @@ MembershipByUserRouter.post("/", async (req, res) => {
         clientID: req.body.clientID,
         membershipID: req.body.membershipID,
         endDate: req.body.endDate,
+        created: new Date(),
         paymentID: payment._id,
         status: 'Activa', 
         total_hours: req.body.hours * 3600,
