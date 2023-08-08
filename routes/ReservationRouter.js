@@ -175,6 +175,40 @@ ReservationRouter.get("/today", async (req, res) => {
   }
   });
 
+//get all
+/**
+ * POST /api/v1/reservation/filter
+ * @tags Reservation
+ * @summary Obtiene todas las reservas filtradas
+ * @return {string} 200 - success response
+ * @return {object} 400 - Bad request response
+ */
+ReservationRouter.post("/filter", async (req, res) => {
+    
+    if(req.start == null || req.end == null) {
+      var startDate = '2023-08-08';
+      var endDate = '2023-08-12';
+    } else {
+      var startDate = req.start;
+      var endDate = req.end;
+    }
+
+
+    // Consulta para encontrar las reservas dentro del rango de fechas
+    const query = {
+      dateTime: {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      },
+    };
+
+  let reservations = await ReservationSchema.find(query).populate('clientID').populate('priceRoomID').populate('paymentID').populate('roomID');
+  return res.status(200).send({
+    success: true,
+    reservations
+  });
+});
+
 module.exports = ReservationRouter
 
 
