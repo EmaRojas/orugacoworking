@@ -185,14 +185,8 @@ ReservationRouter.get("/today", async (req, res) => {
  */
 ReservationRouter.post("/filter", async (req, res) => {
     
-    if(req.body.start == null || req.body.end == null) {
-      var startDate = '2023-08-08';
-      var endDate = '2023-08-30';
-    } else {
-      var startDate = req.body.start;
-      var endDate = req.body.end;
-    }
-
+    var startDate = req.body.start;
+    var endDate = req.body.end;
 
     // Consulta para encontrar las reservas dentro del rango de fechas
     const query = {
