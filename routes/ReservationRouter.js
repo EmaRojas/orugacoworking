@@ -187,7 +187,7 @@ ReservationRouter.post("/filter", async (req, res) => {
     
     if(req.start == null || req.end == null) {
       var startDate = '2023-08-08';
-      var endDate = '2023-08-12';
+      var endDate = '2023-08-30';
     } else {
       var startDate = req.start;
       var endDate = req.end;
