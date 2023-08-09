@@ -20,7 +20,7 @@ const UsageRouter = express.Router();
 UsageRouter.post("/", async (req, res) => {
   const usage = usageSchema(req.body);
 
-  if (!usage.membershipByUserID || !usage.hour || !usage.date) {
+  if (!usage.membershipByUserID) {
     return res.status(400).send({
       success: false,
       message: "Faltan datos de completar"

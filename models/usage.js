@@ -9,7 +9,10 @@ const UsageSchema = new mongoose.Schema({
     startDateTime:{
         type:Date
     },
-    time:{
+    endDateTime:{
+        type:Date
+    },
+    hours:{
         type: Number
     }
 });
