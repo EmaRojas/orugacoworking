@@ -31,12 +31,21 @@ ReservationRouter.post("/", async (req, res) => {
     });
   }
 
+      const dateUtc = new Date();
+      const difference = -3; // ART está UTC-3
+      const dateArgentina = new Date(dateUtc.getTime() + difference * 60 * 60 * 1000);
+
+      var state = 'Pendiente';
+      if(req.body.total == req.body.paid) {
+        state = 'Pagado';
+      }
       // Crear el objeto de pago
       const payment = new PaymentSchema({
         means_of_payment: req.body.means_of_payment,
         total: req.body.total,
-        paid: req.body.paid,
-        status: 'Creado'
+        paid: req.body.paid,                            
+        status: state,
+        created: dateArgentina
       });
   
       // Guardar el pago en la base de datos

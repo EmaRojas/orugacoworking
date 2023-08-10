@@ -28,12 +28,18 @@ MembershipByUserRouter.post("/", async (req, res) => {
     });
   }
 
+      const dateUtc = new Date();
+      const difference = -3; // ART está UTC-3
+      const dateArgentina = new Date(dateUtc.getTime() + difference * 60 * 60 * 1000);
+
+
       // Crear el objeto de pago
       const payment = new PaymentSchema({
         means_of_payment: req.body.means_of_payment,
         total: req.body.total,
-        paid: req.body.total,
-        status: 'Creado'
+        paid: req.body.total,                            
+        status: 'Pagado',
+        created: dateArgentina
       });
   
       // Guardar el pago en la base de datos
@@ -44,7 +50,7 @@ MembershipByUserRouter.post("/", async (req, res) => {
         clientID: req.body.clientID,
         membershipID: req.body.membershipID,
         endDate: req.body.endDate,
-        created: new Date(),
+        created: dateArgentina,
         paymentID: payment._id,
         status: 'Activa', 
         total_hours: req.body.hours * 3600,

@@ -17,7 +17,10 @@ const PaymentSchema = new mongoose.Schema({
     status:{
         type:String,
         require:true
-    }
+    },
+    created:{
+        type: Date
+    },
 });
 
 module.exports = mongoose.model("Payment", PaymentSchema);
