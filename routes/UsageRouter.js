@@ -55,7 +55,7 @@ UsageRouter.post("/", async (req, res) => {
  * @return {object} 400 - Bad request response
  */
 UsageRouter.get("/", async (req, res) => {
-  let usages = await usageSchema.find({});
+  let usages = await UsageSchema.find({});
   return res.status(200).send({
     success: true,
     usages
