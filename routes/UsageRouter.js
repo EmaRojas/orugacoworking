@@ -18,7 +18,7 @@ const UsageRouter = express.Router();
  * @return {object} 200 - song response
  */
 UsageRouter.post("/", async (req, res) => {
-  let { membershipByUserID, hours, startDateTime } = req.body;
+  let { membershipByUserID, hours, startDateTime, endDateTime } = req.body;
 
   if (!membershipByUserID) {
     return res.status(400).send({
@@ -29,10 +29,10 @@ UsageRouter.post("/", async (req, res) => {
 
   // Crear el objeto de reservation
   const usage = new UsageSchema({
-    membershipByUserID: req.body.membershipByUserID,
-    startDateTime: req.body.startDateTime,
-    endDateTime: req.body.endDateTime,
-    hours: req.body.hours
+    membershipByUserID: membershipByUserID,
+    startDateTime: startDateTime,
+    endDateTime: endDateTime,
+    hours: hours
   });
 
   await usage.save()
