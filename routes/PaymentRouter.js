@@ -48,12 +48,73 @@ PaymentRouter.post("/", async (req, res) => {
  * @return {object} 400 - Bad request response
  */
 PaymentRouter.get("/", async (req, res) => {
-  let payments = await paymentSchema.find({});
-  return res.status(200).send({
-    success: true,
-    payments
-  });
-});
+  debugger
+  try {
+    const paymentsWithReservations = await paymentSchema.aggregate([
+    {
+    $lookup: {
+    from: 'reservations', // Nombre de la colección de reservas (en minúsculas y plural)
+    localField: '_id',
+    foreignField: 'paymentID',
+    as: 'reservationInfo'
+    }
+    },
+    {
+    $unwind: '$reservationInfo'
+    },
+    {
+      $lookup: {
+        from: 'clients', // Cambia 'clients' al nombre de tu colección de clientes
+        localField: 'reservationInfo.clientID',
+        foreignField: '_id',
+        as: 'clientInfo'
+      }
+    },
+    {
+      $unwind: '$clientInfo'
+    }
+    ]);
+
+    const paymentsWithMemberships = await paymentSchema.aggregate([
+      {
+      $lookup: {
+      from: 'membershipbyusers', // Nombre de la colección de reservas (en minúsculas y plural)
+      localField: '_id',
+      foreignField: 'paymentID',
+      as: 'membershipInfo'
+      }
+      },
+      {
+      $unwind: '$membershipInfo'
+      },
+      {
+        $lookup: {
+          from: 'clients', // Cambia 'clients' al nombre de tu colección de clientes
+          localField: 'membershipInfo.clientID',
+          foreignField: '_id',
+          as: 'clientInfo'
+        }
+      },
+      {
+        $unwind: '$clientInfo'
+      }
+      ]);
+
+    const combinedPayments = paymentsWithReservations.concat(paymentsWithMemberships);
+    res.json(combinedPayments);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al obtener los pagos con reservas' });
+    }
+    });
+
+
+//   let payments = await paymentSchema.find({});
+//   return res.status(200).send({
+//     success: true,
+//     payments
+//   });
+// });
 
 //update
 /**
