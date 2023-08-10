@@ -18,17 +18,24 @@ const UsageRouter = express.Router();
  * @return {object} 200 - song response
  */
 UsageRouter.post("/", async (req, res) => {
-  const usage = usageSchema(req.body);
+  let { membershipByUserID, hours, startDateTime } = req.body;
 
-  if (!usage.membershipByUserID) {
+  if (!membershipByUserID) {
     return res.status(400).send({
       success: false,
       message: "Faltan datos de completar"
     });
   }
 
-  usage
-    .save()
+  // Crear el objeto de reservation
+  const usage = new UsageSchema({
+    membershipByUserID: req.body.membershipByUserID,
+    startDateTime: req.body.startDateTime,
+    endDateTime: req.body.endDateTime,
+    hours: req.body.hours
+  });
+
+  await usage.save()
     .then((data) => res.status(200).send({
       success: true,
       data
