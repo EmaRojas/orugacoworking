@@ -55,7 +55,13 @@ UsageRouter.post("/", async (req, res) => {
  * @return {object} 400 - Bad request response
  */
 UsageRouter.get("/", async (req, res) => {
-  let usages = await UsageSchema.find({});
+  let usages = await UsageSchema.find({}).populate({
+    path: 'membershipByUserID',
+    populate: {
+      path: 'clientID', // Esto asume que hay una referencia a los datos del cliente en membershipByUserID.clientID
+    }
+  });
+  
   return res.status(200).send({
     success: true,
     usages
