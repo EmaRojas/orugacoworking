@@ -212,6 +212,65 @@ ReservationRouter.post("/filter", async (req, res) => {
   });
 });
 
+ReservationRouter.post("/filter/stats", async (req, res) => {
+  try {
+      const startDate = req.body.start;
+      const endDate = req.body.end;
+
+      // Consulta para encontrar las reservas dentro del rango de fechas
+      const query = {
+          dateTime: {
+              $gte: new Date(startDate),
+              $lte: new Date(endDate),
+          },
+      };
+
+      // Obtener la cantidad total de reservas en el rango horario dado
+      const totalReservations = await ReservationSchema.countDocuments(query);
+
+      // Obtener la cantidad de reservas por nombre de sala
+      const roomStats = await ReservationSchema.aggregate([
+          {
+              $match: query,
+          },
+          {
+              $lookup: {
+                  from: "rooms", // El nombre de la colección en la base de datos
+                  localField: "roomID",
+                  foreignField: "_id",
+                  as: "roomData",
+              },
+          },
+          {
+              $group: {
+                  _id: "$roomData.name", // Referencia correcta al nombre de la sala
+                  count: { $sum: 1 },
+              },
+          },
+          {
+              $project: {
+                  roomName: "$_id",
+                  count: 1,
+                  _id: 0,
+              },
+          },
+      ]);
+
+      return res.status(200).send({
+          success: true,
+          totalReservations,
+          roomStats,
+      });
+  } catch (error) {
+      return res.status(500).send({
+          success: false,
+          message: "An error occurred while processing your request.",
+          error: error.message,
+      });
+  }
+});
+
+
 module.exports = ReservationRouter
 
 
