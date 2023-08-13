@@ -191,7 +191,10 @@ PaymentRouter.post("/filter", async (req, res) => {
       paymentsWithMemberships
     );
 
-    res.json(combinedPayments);
+    res.status(200).json({
+      success: true,
+      payments: combinedPayments,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error al obtener los pagos con reservas" });
