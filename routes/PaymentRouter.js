@@ -253,6 +253,59 @@ PaymentRouter.delete("/:id", async (req, res) => {
   }
 });
 
+PaymentRouter.post("/filter/stats", async (req, res) => {
+    try {
+        const startDate = req.body.start;
+        const endDate = req.body.end;
+
+        // Consulta para encontrar los pagos dentro del rango de fechas
+        const query = {
+            created: {
+                $gte: new Date(startDate),
+                $lte: new Date(endDate),
+            },
+        };
+
+        // Obtener todos los pagos dentro del rango de fechas
+        const payments = await paymentSchema.find(query);
+
+        // Calcula la suma total y pagada
+        let totalSum = 0;
+        let paidSum = 0;
+
+        // Objeto para rastrear los medios de pago
+        const meansOfPaymentStats = {};
+
+        payments.forEach(payment => {
+            totalSum += parseFloat(payment.total);
+            paidSum += parseFloat(payment.paid);
+
+            if (!meansOfPaymentStats[payment.means_of_payment]) {
+                meansOfPaymentStats[payment.means_of_payment] = 1;
+            } else {
+                meansOfPaymentStats[payment.means_of_payment]++;
+            }
+        });
+
+        // Formatea los resultados en el objeto JSON deseado
+        const paymentSummary = {
+            success: true,
+            totalPayments: payments.length,
+            total: totalSum,
+            paid: paidSum,
+            meansOfPaymentStats: [meansOfPaymentStats]
+        };
+
+        return res.status(200).send(paymentSummary);
+    } catch (error) {
+        return res.status(500).send({
+            success: false,
+            message: "An error occurred while processing your request.",
+            error: error.message,
+        });
+    }
+});
+
 
 module.exports = PaymentRouter
 
