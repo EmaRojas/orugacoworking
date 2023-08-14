@@ -214,6 +214,35 @@ ReservationRouter.post("/filter", async (req, res) => {
   });
 });
 
+ReservationRouter.get("/current", async (req, res) => {
+
+  const dateUtc = new Date();
+  const difference = -3; // ART está UTC-3
+  const now = new Date(dateUtc.getTime() + difference * 60 * 60 * 1000);
+
+  try {
+    const reservations = await ReservationSchema.find({
+      dateTime: { $lte: now }, // La reserva ha comenzado (fecha y hora de inicio es anterior o igual a ahora)
+      endDateTime: { $gte: now } // La reserva aún no ha terminado (fecha y hora de fin es posterior o igual a ahora)
+    })
+    .populate("clientID")
+    .populate("priceRoomID")
+    .populate("paymentID")
+    .populate("roomID");
+
+    return res.status(200).send({
+      success: true,
+      reservations
+    });
+
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "Error obteniendo reservas"
+    });
+  }
+});
+
 ReservationRouter.post("/filter/stats", async (req, res) => {
   try {
       const startDate = req.body.start;
