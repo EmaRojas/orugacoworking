@@ -16,6 +16,9 @@ const ReservationSchema = new mongoose.Schema({
     dateTime:{
         type: Date
     },
+    endDateTime:{
+        type: Date
+    },
     date:{
         type:String
     },

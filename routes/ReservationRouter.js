@@ -57,6 +57,7 @@ ReservationRouter.post("/", async (req, res) => {
         priceRoomID: req.body.priceRoomID,
         roomID: req.body.roomID,
         dateTime: req.body.dateTime,
+        endDateTime: req.body.endDateTime,
         date: req.body.date,
         time: req.body.time,
         endTime: req.body.endTime,
@@ -183,6 +184,7 @@ ReservationRouter.get("/today", async (req, res) => {
   });
   }
   });
+
 
 //get all
 /**
