@@ -132,12 +132,31 @@ ReservationRouter.put("/:id", async (req, res) => {
 ReservationRouter.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Obtener la reserva para obtener el paymentID
+    const reservation = await ReservationSchema.findById(id);
+    if (!reservation) {
+      return res.status(404).send({
+        success: false,
+        message: "Reserva no encontrada",
+      });
+    }
+
+    const paymentId = reservation.paymentID;
+
+    // Eliminar la reserva
     await ReservationSchema.findByIdAndDelete(id);
+
+    // Si se encontró un paymentId, eliminar el pago asociado
+    if (paymentId) {
+      await PaymentSchema.findByIdAndDelete(paymentId);
+    }
+
     res.status(200).send({
       success: true,
-      message: "Reserva eliminado!",
+      message: "Reserva eliminada junto con el pago asociado",
     });
-  } catch (error) {
+    } catch (error) {
     res.status(500).send({
       success: false,
       message: error.message,
