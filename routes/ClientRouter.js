@@ -113,6 +113,38 @@ ClientRouter.delete("/:id", async (req, res) => {
   }
 });
 
+/**
+ * GET /api/v1/client/{email}
+ * @tags Client
+ * @summary Obtiene un cliente por su dirección de correo electrónico
+ * @param {string} email.path - Dirección de correo electrónico del cliente
+ * @return {object} 200 - success response
+ * @return {object} 404 - Not found response
+ */
+ClientRouter.get("/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const client = await clientSchema.findOne({ email });
+
+    if (!client) {
+      return res.status(404).send({
+        success: false,
+        message: "Cliente no encontrado",
+      });
+    }
+
+    res.status(200).send({
+      success: true,
+      client,
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
 
 module.exports = ClientRouter
 
