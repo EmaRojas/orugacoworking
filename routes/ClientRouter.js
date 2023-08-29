@@ -1,6 +1,8 @@
 const express = require("express");
 const clientSchema = require("../models/client");
 const ClientRouter = express.Router();
+const MembershipByUserSchema = require("../models/membershipByUser");
+const UsageSchema = require("../models/usage");
 
 
 /**
@@ -145,6 +147,54 @@ ClientRouter.get("/:email", async (req, res) => {
   }
 });
 
+
+/**
+ * GET /api/v1/client/usages/{email}
+ * @tags Client
+ * @summary Obtiene registros de uso por la dirección de correo electrónico del cliente
+ * @param {string} email.path - Dirección de correo electrónico del cliente
+ * @return {object} 200 - success response
+ * @return {object} 404 - Not found response
+ */
+ClientRouter.get("/usages/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+
+    // Buscar el cliente por su dirección de correo electrónico
+    const client = await clientSchema.findOne({ email });
+
+    if (!client) {
+      return res.status(404).send({
+        success: false,
+        message: "Cliente no encontrado",
+      });
+    }
+    console.log(client);
+    // Buscar los registros de uso relacionados a la membresía del cliente
+    const memberships = await MembershipByUserSchema.find({
+      clientID: client._id,
+    });
+    console.log(memberships);
+    const usagePromises = memberships.map(async (membership) => {
+      return await UsageSchema.find({
+        membershipByUserID: membership._id,
+      });
+    });
+
+    const usageResults = await Promise.all(usagePromises);
+    const usages = usageResults.flat();
+    console.log(usages);
+    res.status(200).send({
+      success: true,
+      usages,
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: error.message,
+    });
+  }
+});
 
 module.exports = ClientRouter
 

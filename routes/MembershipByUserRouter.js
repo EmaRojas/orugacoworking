@@ -2,6 +2,7 @@ const express = require("express");
 const MembershipByUserSchema = require("../models/membershipByUser");
 const MembershipByUserRouter = express.Router();
 const PaymentSchema = require("../models/payment");
+const ClientSchema = require("../models/client");
 
 
 /**
@@ -227,6 +228,45 @@ MembershipByUserRouter.delete("/:id", async (req, res) => {
   }
 });
 
+
+/**
+ * GET /api/v1/membershipByUser/client/{email}
+ * @tags MembershipByUser
+ * @summary Obtiene membresías por la dirección de correo electrónico del cliente
+ * @param {string} email.path - Dirección de correo electrónico del cliente
+ * @return {object} 200 - success response
+ * @return {object} 404 - Not found response
+ */
+MembershipByUserRouter.get("/client/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+
+    // Buscar el cliente por su dirección de correo electrónico
+    const client = await ClientSchema.findOne({ email });
+
+    if (!client) {
+      return res.status(404).send({
+        success: false,
+        message: "Cliente no encontrado",
+      });
+    }
+
+    // Buscar las membresías por el ID del cliente
+    const memberships = await MembershipByUserSchema.find({
+      clientID: client._id,
+    }).populate("membershipID").populate("paymentID");
+
+    res.status(200).send({
+      success: true,
+      memberships,
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: error.message,
+    });
+  }
+});
 
 module.exports = MembershipByUserRouter
 
