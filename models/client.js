@@ -21,7 +21,7 @@ const ClientSchema = new mongoose.Schema({
         type:String,
         require:true
     },    
-    assistance:{
+    category:{
         type:String,
         require:true
     }
