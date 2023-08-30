@@ -21,10 +21,6 @@ const ClientSchema = new mongoose.Schema({
         type:String,
         require:true
     },    
-    description:{
-        type:String,
-        require:true
-    },
     assistance:{
         type:String,
         require:true

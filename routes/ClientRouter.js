@@ -25,7 +25,7 @@ const UsageSchema = require("../models/usage");
 ClientRouter.post("/", async (req, res) => {
   const client = clientSchema(req.body);
 
-  if (!client.full_name || !client.phone || !client.email || !client.company_name || !client.cuit || !client.description || !client.assistance) {
+  if (!client.full_name || !client.phone || !client.email || !client.company_name || !client.cuit || !client.assistance) {
     return res.status(400).send({
       success: false,
       message: "Faltan datos de completar"
