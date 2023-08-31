@@ -31,6 +31,12 @@ const ReservationSchema = new mongoose.Schema({
     paymentID:{
         type: mongoose.Schema.Types.ObjectId,
         ref:"Payment"
+    },
+    billing:{
+        type:String
+    },
+    note:{
+        type:String
     }
 })
 

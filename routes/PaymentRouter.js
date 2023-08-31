@@ -253,6 +253,15 @@ PaymentRouter.delete("/:id", async (req, res) => {
   }
 });
 
+//get stats
+/**
+ * POST /api/v1/payment/filter/stats
+ * @tags Payment
+ * @summary Obtiene las estadisticas de pagos
+ * @return {string} 200 - success response
+ * @return {object} 400 - Bad request response
+ */
+
 PaymentRouter.post("/filter/stats", async (req, res) => {
     try {
         const startDate = req.body.start;

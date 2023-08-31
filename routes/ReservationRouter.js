@@ -61,7 +61,9 @@ ReservationRouter.post("/", async (req, res) => {
         date: req.body.date,
         time: req.body.time,
         endTime: req.body.endTime,
-        paymentID: payment._id
+        paymentID: payment._id,
+        billing: req.body.billing,
+        note: req.body.note
       });
 
       // Guardar la reserva en la base de datos
