@@ -33,6 +33,9 @@ const MembershipByUserSchema = new mongoose.Schema({
     remaining_hours: {
         type: Number,
     },
+    billing: {
+        type: String,
+    }
 });
 
 module.exports = mongoose.model("MembershipByUser", MembershipByUserSchema);

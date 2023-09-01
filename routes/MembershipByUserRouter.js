@@ -56,6 +56,7 @@ MembershipByUserRouter.post("/", async (req, res) => {
         status: 'Activa', 
         total_hours: req.body.hours * 3600,
         remaining_hours: req.body.hours * 3600,
+        billing: req.body.billing
       });
 
       await membershipByUser.save()
