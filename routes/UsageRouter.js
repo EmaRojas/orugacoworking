@@ -18,7 +18,7 @@ const UsageRouter = express.Router();
  * @return {object} 200 - song response
  */
 UsageRouter.post("/", async (req, res) => {
-  let { membershipByUserID, hours, startDateTime, endDateTime } = req.body;
+  let { membershipByUserID, hours, startDateTime, endDateTime, member } = req.body;
 
   if (!membershipByUserID) {
     return res.status(400).send({
@@ -32,7 +32,8 @@ UsageRouter.post("/", async (req, res) => {
     membershipByUserID: membershipByUserID,
     startDateTime: startDateTime,
     endDateTime: endDateTime,
-    hours: hours
+    hours: hours,
+    member: member
   });
 
   await usage.save()

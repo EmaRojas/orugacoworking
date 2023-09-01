@@ -14,6 +14,9 @@ const UsageSchema = new mongoose.Schema({
     },
     hours:{
         type: Number
+    },
+    member:{
+        type:String
     }
 });
 
