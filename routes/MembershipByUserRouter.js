@@ -51,7 +51,6 @@ MembershipByUserRouter.post("/", async (req, res) => {
         clientID: req.body.clientID,
         membershipID: req.body.membershipID,
         roomID: req.body.roomID,
-        endDate: req.body.endDate,
         created: dateArgentina,
         paymentID: payment._id,
         status: 'Activa', 
