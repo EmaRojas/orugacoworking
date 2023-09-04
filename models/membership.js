@@ -6,6 +6,11 @@ const MembershipSchema = new mongoose.Schema({
         type:String,
         require: true
     },
+    roomID:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref:"Room",
+        require: true
+    },
     price:{
         type:String,
         require: true

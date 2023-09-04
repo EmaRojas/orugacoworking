@@ -12,6 +12,11 @@ const MembershipByUserSchema = new mongoose.Schema({
         ref:"Membership",
         require: true
     },
+    roomID:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref:"Room",
+        require: true
+    },
     paymentID:{
         type: mongoose.Schema.Types.ObjectId,
         ref:"Payment",

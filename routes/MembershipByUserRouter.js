@@ -50,6 +50,7 @@ MembershipByUserRouter.post("/", async (req, res) => {
       const membershipByUser = new MembershipByUserSchema({
         clientID: req.body.clientID,
         membershipID: req.body.membershipID,
+        roomID: req.body.roomID,
         endDate: req.body.endDate,
         created: dateArgentina,
         paymentID: payment._id,
@@ -80,7 +81,7 @@ MembershipByUserRouter.post("/", async (req, res) => {
  * @return {object} 400 - Bad request response
  */
 MembershipByUserRouter.get("/", async (req, res) => {
-  let membershipsByUser = await MembershipByUserSchema.find({}).populate('clientID').populate('membershipID').populate('paymentID');
+  let membershipsByUser = await MembershipByUserSchema.find({}).populate('clientID').populate('membershipID').populate('paymentID').populate('roomID');
   return res.status(200).send({
     success: true,
     membershipsByUser
