@@ -323,7 +323,59 @@ ReservationRouter.post("/filter/stats", async (req, res) => {
   }
 });
 
+ReservationRouter.post("/by-date", async (req, res) => {
+  try {
+    const { date } = req.body; // Asegúrate de enviar la fecha en el cuerpo de la solicitud como { "date": "2023-09-06" }
+    console.log(date);
+    // Verifica si la fecha es válida en el formato deseado (yyyy-MM-dd)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return res.status(400).send({
+        success: false,
+        message: "Formato de fecha no válido. Debe ser yyyy-MM-dd.",
+      });
+    }
 
+    const reservations = await ReservationSchema.find({
+      date: date,
+    }).populate("roomID");
+
+    const rooms = {}; // Objeto para almacenar información de salas
+
+    // Inicializa horarios para todas las salas como libres
+    reservations.forEach((reservation) => {
+      const roomName = reservation.roomID.name;
+      if (!rooms[roomName]) {
+        rooms[roomName] = {};
+        for (let i = 0; i < 24; i++) {
+          const timeSlot = i.toString().padStart(2, "0") + "-" + (i + 1).toString().padStart(2, "0");
+          rooms[roomName][timeSlot] = "free";
+        }
+      }
+    });
+
+    // Marca los horarios ocupados para cada sala
+    reservations.forEach((reservation) => {
+      const roomName = reservation.roomID.name;
+      const startTime = parseInt(reservation.time.substring(0, 2));
+      const endTime = parseInt(reservation.endTime.substring(0, 2));
+
+      for (let i = startTime; i < endTime; i++) {
+        const timeSlot = i.toString().padStart(2, "0") + "-" + (i + 1).toString().padStart(2, "0");
+        rooms[roomName][timeSlot] = "busy";
+      }
+    });
+
+    return res.status(200).send({
+      success: true,
+      rooms,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      success: false,
+      message: "Error obteniendo información de salas",
+    });
+  }
+});
 module.exports = ReservationRouter
 
 
