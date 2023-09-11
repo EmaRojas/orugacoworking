@@ -1,5 +1,6 @@
 const express = require("express");
 const roomSchema = require("../models/room");
+const priceRoomSchema = require("../models/priceRoom");
 const RoomRouter = express.Router();
 
 
@@ -90,10 +91,30 @@ RoomRouter.put("/:id", async (req, res) => {
 RoomRouter.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Obtén todas las priceRooms sin importar el roomID
+    const priceRooms = await priceRoomSchema.find({}).populate('roomID');
+
+    if (!priceRooms || priceRooms.length === 0) {
+      return res.status(404).send({
+        success: false,
+        message: "No se encontraron PriceRooms para eliminar.",
+      });
+    }
+
+    // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
+    for (const priceRoom of priceRooms) {
+      if (priceRoom.roomID._id.toString() === id) {
+        await priceRoomSchema.findByIdAndDelete(priceRoom._id);
+      }
+    }
+
+    // Luego, elimina la sala
     await roomSchema.findByIdAndDelete(id);
+
     res.status(200).send({
       success: true,
-      message: "Sala eliminada!",
+      message: "Sala eliminada junto con sus PriceRooms.",
     });
   } catch (error) {
     res.status(500).send({
@@ -102,7 +123,6 @@ RoomRouter.delete("/:id", async (req, res) => {
     });
   }
 });
-
 
 module.exports = RoomRouter
 
