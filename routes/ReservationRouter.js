@@ -3,7 +3,15 @@ const ReservationSchema = require("../models/reservation");
 const PaymentSchema = require("../models/payment");
 
 const ReservationRouter = express.Router();
+const nodemailer = require('nodemailer');
 
+const transporter = nodemailer.createTransport({
+  service: 'Gmail',
+  auth: {
+    user: 'locofutbolnet@gmail.com', // Tu dirección de correo electrónico
+    pass: 'punksnotdead', // Tu contraseña de correo electrónico
+  },
+});
 
 /**
  * @typedef {object} Reservation
@@ -76,6 +84,23 @@ ReservationRouter.post("/", async (req, res) => {
        success: false,
        message: error.message,
       }));
+
+  // Enviar un correo electrónico con la información de la reserva
+  const mailOptions = {
+    from: 'locofutbolnet@gmail.com', // Tu dirección de correo electrónico
+    to: 'facunquintana@gmail.com', // La dirección de correo electrónico del destinatario
+    subject: 'Reserva Confirmada',
+    text: `Información de la reserva:
+  `,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error('Error al enviar el correo electrónico:', error);
+    } else {
+      console.log('Correo electrónico enviado:', info.response);
+    }
+  });
 });
 
 //get all
