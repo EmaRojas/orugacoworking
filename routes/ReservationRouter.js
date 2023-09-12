@@ -124,6 +124,94 @@ ReservationRouter.put("/:id", async (req, res) => {
   });
 });
 
+const utcArgentina = (value) =>{
+  const date = new Date(value);
+  const difference = -3; // ART está UTC-3
+  const response = new Date(date.getTime() + difference * 60 * 60 * 1000);
+  return response;
+  }
+
+/**
+ * @typedef {object} Reservation
+ * @property {string} clientID.requiere
+ * @property {string} roomID.required
+ * @property {string} priceRoomID
+ * @property {string} date.required /
+/*
+ * POST /api/v1/reservation/membership
+ * @tags Reservation
+ * @summary Crear nueva reserva
+ * @param {Reservation} request.body.required
+ * @return {object} 200 - song response
+*/
+
+
+ReservationRouter.post("/membership", async (req, res) => {
+  const reservation = ReservationSchema(req.body);
+  if (!reservation.clientID) {
+    return res.status(400).send({
+    success: false,
+    message: "Faltan datos de completar"
+    });
+    }
+  
+    // Crear el objeto de reservation
+    const reserva = new ReservationSchema({
+      clientID: req.body.clientID,
+      dateTime: utcArgentina(req.body.dateTime),
+      endDateTime: utcArgentina(req.body.endDateTime),
+      date: req.body.date,
+      time: req.body.time,
+      endTime: req.body.endTime
+    });
+  
+    // Guardar la reserva en la base de datos
+    await reserva.save()
+    .then((data) => res.status(200).send({
+     success: true,
+     data
+    }))
+    .catch((error) => res.status(500).send({
+     success: false,
+     message: error.message,
+    })); 
+  });
+
+//get client reservations
+/**
+ * GET /api/v1/reservation/client/{id}
+ * @tags Reservation
+ * @summary Obtiene las reservas del cliente
+ * @param {string} id.path - id
+ * @return {object} 200 - success response
+ * @return {object} 400 - Bad request response
+ */
+ReservationRouter.get("/client/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+  const reservations = await ReservationSchema.find({
+    clientID: id
+  })
+  .populate("clientID")
+  .populate("priceRoomID")
+  .populate("paymentID")
+  .populate("roomID");
+
+  return res.status(200).send({
+    success: true,
+    reservations
+  });
+
+} catch (error) {
+  return res.status(500).send({
+  success: false,
+  message: "Error obteniendo reservas"
+  });
+  }
+  }); 
+
+
 /**
  * delete /api/v1/reservation/{id}
  * @tags Reservation

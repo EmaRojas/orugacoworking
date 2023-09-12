@@ -1,6 +1,11 @@
 const express = require("express");
 const roomSchema = require("../models/room");
 const priceRoomSchema = require("../models/priceRoom");
+const membershipSchema = require("../models/membership");
+const membershipByUserSchema = require("../models/membershipByUser");
+const reservationSchema = require("../models/reservation");
+const paymentSchema = require("../models/payment");
+
 const RoomRouter = express.Router();
 
 
@@ -95,13 +100,6 @@ RoomRouter.delete("/:id", async (req, res) => {
     // Obtén todas las priceRooms sin importar el roomID
     const priceRooms = await priceRoomSchema.find({}).populate('roomID');
 
-    if (!priceRooms || priceRooms.length === 0) {
-      return res.status(404).send({
-        success: false,
-        message: "No se encontraron PriceRooms para eliminar.",
-      });
-    }
-
     // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
     for (const priceRoom of priceRooms) {
       if (priceRoom.roomID._id.toString() === id) {
@@ -109,6 +107,33 @@ RoomRouter.delete("/:id", async (req, res) => {
       }
     }
 
+    const membershipsByUser = await membershipByUserSchema.find({}).populate('roomID');
+
+    // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
+    for (const membershipByUser of membershipsByUser) {
+      if (membershipByUser.roomID._id.toString() === id) {
+        await membershipByUserSchema.findByIdAndDelete(membershipByUser._id);
+      }
+    }
+
+    const memberships = await membershipSchema.find({});
+
+    for (const membership of memberships) {
+      if (membership.roomID.toString() === id) {
+        await membershipSchema.findByIdAndDelete(membership._id);
+      }
+    }
+
+    const reservations = await reservationSchema.find({}).populate('roomID');
+
+    // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
+    for (const reservation of reservations) {
+      if (reservation.roomID._id.toString() === id) {
+        await reservationSchema.findByIdAndDelete(reservation._id);
+        const paymentId = reservation.paymentID;
+        await paymentSchema.findByIdAndDelete(paymentId._id);
+      }
+    }
     // Luego, elimina la sala
     await roomSchema.findByIdAndDelete(id);
 

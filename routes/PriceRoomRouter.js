@@ -1,5 +1,8 @@
 const express = require("express");
 const priceRoomSchema = require("../models/priceRoom");
+const reservationSchema = require("../models/reservation");
+const paymentSchema = require("../models/payment");
+
 const PriceRoomRouter = express.Router();
 
 
@@ -92,6 +95,18 @@ PriceRoomRouter.put("/:id", async (req, res) => {
 PriceRoomRouter.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
+
+    const reservations = await reservationSchema.find({}).populate('priceRoomID');
+
+    // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
+    for (const reservation of reservations) {
+      if (reservation.priceRoomID._id.toString() === id) {
+        await reservationSchema.findByIdAndDelete(reservation._id);
+        const paymentId = reservation.paymentID;
+        await paymentSchema.findByIdAndDelete(paymentId._id);
+      }
+    }
+
     await priceRoomSchema.findByIdAndDelete(id);
     res.status(200).send({
       success: true,

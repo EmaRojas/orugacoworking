@@ -1,5 +1,6 @@
 const express = require("express");
 const clientSchema = require("../models/client");
+const reservationSchema = require("../models/reservation");
 const ClientRouter = express.Router();
 const MembershipByUserSchema = require("../models/membershipByUser");
 const UsageSchema = require("../models/usage");
@@ -102,6 +103,41 @@ ClientRouter.put("/:id", async (req, res) => {
 ClientRouter.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
+
+    const reservations = await reservationSchema.find({}).populate('clientID');
+
+    // if (!reservations || reservations.length === 0) {
+    //   return res.status(404).send({
+    //     success: false,
+    //     message: "No se encontraron PriceRooms para eliminar.",
+    //   });
+    // }
+
+    // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
+    for (const reservation of reservations) {
+      if (reservation.clientID._id.toString() === id) {
+        await reservationSchema.findByIdAndDelete(reservation._id);
+      }
+    }
+
+    const usages = await UsageSchema.find({}).populate('membershipByUserID');
+
+    // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
+    for (const usage of usages) {
+      if (usage.membershipByUserID.clientID._id.toString() === id) {
+        await UsageSchema.findByIdAndDelete(usage._id);
+      }
+    }
+
+    const membershipsByUser = await MembershipByUserSchema.find({}).populate('clientID');
+
+    // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
+    for (const membershipByUser of membershipsByUser) {
+      if (membershipByUser.clientID._id.toString() === id) {
+        await MembershipByUserSchema.findByIdAndDelete(membershipByUser._id);
+      }
+    }
+
     await clientSchema.findByIdAndDelete(id);
     res.status(200).send({
       success: true,
@@ -173,7 +209,7 @@ ClientRouter.get("/usages/:email", async (req, res) => {
     // Buscar los registros de uso relacionados a la membresía del cliente
     const memberships = await MembershipByUserSchema.find({
       clientID: client._id,
-    });
+    }).populate("clientID");
     console.log(memberships);
     const usagePromises = memberships.map(async (membership) => {
       return await UsageSchema.find({

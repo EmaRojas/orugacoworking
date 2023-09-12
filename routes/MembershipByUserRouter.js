@@ -3,6 +3,7 @@ const MembershipByUserSchema = require("../models/membershipByUser");
 const MembershipByUserRouter = express.Router();
 const PaymentSchema = require("../models/payment");
 const ClientSchema = require("../models/client");
+const usageSchema = require("../models/usage");
 
 
 /**
@@ -80,7 +81,7 @@ MembershipByUserRouter.post("/", async (req, res) => {
  * @return {object} 400 - Bad request response
  */
 MembershipByUserRouter.get("/", async (req, res) => {
-  let membershipsByUser = await MembershipByUserSchema.find({}).populate('clientID').populate('membershipID').populate('paymentID').populate('roomID');
+  let membershipsByUser = await MembershipByUserSchema.find({ status: "Activa" }).populate('clientID').populate('membershipID').populate('paymentID').populate('roomID');
   return res.status(200).send({
     success: true,
     membershipsByUser
@@ -131,14 +132,14 @@ MembershipByUserRouter.post("/useHours/:id", async (req, res) => {
       });
     }
 
-    if (membershipByUser.remaining_hours === 0 || totalSeconds > membershipByUser.remaining_hours) {
-      return res.status(400).send({
-        success: false,
-        message: "Invalid number of hours"
-      });
+    if(totalSeconds >= membershipByUser.remaining_hours) {
+      membershipByUser.remaining_hours = 0;
+      membershipByUser.status = 'Finalizada'
     }
-
-    membershipByUser.remaining_hours -= totalSeconds;
+    else {
+      membershipByUser.remaining_hours -= totalSeconds;
+    }
+    
 
     // Guarda el objeto actualizado en la base de datos
     await membershipByUser.save();
@@ -197,6 +198,15 @@ MembershipByUserRouter.put("/:id", async (req, res) => {
 MembershipByUserRouter.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
+
+    const usages = await usageSchema.find({}).populate('membershipByUserID');
+
+    // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
+    for (const usage of usages) {
+      if (usage.membershipByUserID._id.toString() === id) {
+        await usageSchema.findByIdAndDelete(usage._id);
+      }
+    }
 
     // Obtener la entrada de MembershipByUser para obtener el paymentID
     const membershipByUser = await MembershipByUserSchema.findById(id);
