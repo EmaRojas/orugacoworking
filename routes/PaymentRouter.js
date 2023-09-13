@@ -1,5 +1,8 @@
 const express = require("express");
 const paymentSchema = require("../models/payment");
+const reservationSchema = require("../models/reservation");
+const membershipByUserSchema = require("../models/membershipByUser");
+
 const PaymentRouter = express.Router();
 
 
@@ -220,6 +223,27 @@ PaymentRouter.post("/filter", async (req, res) => {
 PaymentRouter.put("/:id", async (req, res) => {
   const { id } = req.params;
   const { ...data } = req.body;
+
+
+  const reservations = await reservationSchema.find({}).populate('paymentID');
+
+  // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
+  for (const reservation of reservations) {
+    if (reservation.paymentID._id.toString() === id) {
+      reservation.billing = req.body.billing;
+      await reservation.save();
+    }
+  }
+
+  const membershipsByUser = await membershipByUserSchema.find({}).populate('paymentID');
+
+  // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
+  for (const membershipByUser of membershipsByUser) {
+    if (membershipByUser.paymentID._id.toString() === id) {
+      membershipByUser.billing = req.body.billing;
+      await membershipByUser.save();
+    }
+  }
 
   let payment = await paymentSchema.findByIdAndUpdate(id, data, { new: true });
 

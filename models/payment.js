@@ -21,6 +21,9 @@ const PaymentSchema = new mongoose.Schema({
     created:{
         type: Date
     },
+    billing:{
+        type:String
+    },
 });
 
 module.exports = mongoose.model("Payment", PaymentSchema);

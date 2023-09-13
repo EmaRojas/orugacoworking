@@ -41,7 +41,8 @@ MembershipByUserRouter.post("/", async (req, res) => {
         total: req.body.total,
         paid: req.body.total,                            
         status: 'Pagado',
-        created: dateArgentina
+        created: dateArgentina,
+        billing: req.body.billing
       });
   
       // Guardar el pago en la base de datos

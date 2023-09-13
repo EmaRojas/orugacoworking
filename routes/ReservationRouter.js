@@ -45,7 +45,8 @@ ReservationRouter.post("/", async (req, res) => {
         total: req.body.total,
         paid: req.body.paid,                            
         status: state,
-        created: dateArgentina
+        created: dateArgentina,
+        billing: req.body.billing
       });
   
       // Guardar el pago en la base de datos
