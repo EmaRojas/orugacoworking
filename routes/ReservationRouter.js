@@ -163,7 +163,9 @@ ReservationRouter.post("/membership", async (req, res) => {
       endDateTime: utcArgentina(req.body.endDateTime),
       date: req.body.date,
       time: req.body.time,
-      endTime: req.body.endTime
+      endTime: req.body.endTime,
+      roomID: req.body.roomID,
+      note: req.body.note
     });
   
     // Guardar la reserva en la base de datos
