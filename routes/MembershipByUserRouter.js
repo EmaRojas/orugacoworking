@@ -266,7 +266,7 @@ MembershipByUserRouter.get("/client/:email", async (req, res) => {
     // Buscar las membresías por el ID del cliente
     const memberships = await MembershipByUserSchema.find({
       clientID: client._id,
-    }).populate("membershipID").populate("paymentID");
+    }).populate("membershipID").populate("paymentID").populate("roomID");
 
     res.status(200).send({
       success: true,
