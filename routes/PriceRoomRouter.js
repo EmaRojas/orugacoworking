@@ -74,15 +74,32 @@ PriceRoomRouter.get("/", async (req, res) => {
  */
 PriceRoomRouter.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const { ...data } = req.body;
 
-  let priceRoom = await priceRoomSchema.findByIdAndUpdate(id, data, { new: true });
+  try {
+    // Buscar el documento existente por su _id
+    const existingPriceRoom = await priceRoomSchema.findById(id);
 
-  res.status(200).send({
-    success: true,
-    message: "Precio modificado!",
-    priceRoom
-  });
+    if (!existingPriceRoom) {
+      return res.status(404).json({ success: false, message: "Precio no encontrado" });
+    }
+
+    // Actualizar los campos
+    existingPriceRoom.hour = req.body.hour;
+    existingPriceRoom.price = req.body.price;
+    existingPriceRoom.name = req.body.name;
+
+    // Guardar la actualización
+    await existingPriceRoom.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Precio modificado!",
+      priceRoom: existingPriceRoom,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Error interno del servidor" });
+  }
 });
 
 /**
