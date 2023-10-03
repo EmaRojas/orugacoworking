@@ -36,7 +36,15 @@ const MembershipByUserSchema = new mongoose.Schema({
     },
     billing: {
         type: String,
-    }
+    },
+    paid:{
+        type:String,
+        require: true
+    },
+    total:{
+        type:String,
+        require: true
+    },
 });
 
 module.exports = mongoose.model("MembershipByUser", MembershipByUserSchema);

@@ -20,7 +20,7 @@ const MembershipRouter = express.Router();
 MembershipRouter.post("/", async (req, res) => {
   const membership = membershipSchema(req.body);
 
-  if (!membership.name || !membership.roomID || !membership.price || !membership.type || !membership.hours) {
+  if (!membership.roomID || !membership.type || !membership.hours) {
     return res.status(400).send({
       success: false,
       message: "Faltan datos de completar"

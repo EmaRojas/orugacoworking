@@ -11,10 +11,6 @@ const MembershipSchema = new mongoose.Schema({
         ref:"Room",
         require: true
     },
-    price:{
-        type:String,
-        require: true
-    },
     type:{
         type:String,
         require: true
