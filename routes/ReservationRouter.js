@@ -51,7 +51,7 @@ ReservationRouter.post("/", async (req, res) => {
   
       // Guardar el pago en la base de datos
       await payment.save();
-
+      console.log(req.body.dateTime);
       // Crear el objeto de reservation
       const reserva = new ReservationSchema({
         clientID: req.body.clientID,
@@ -117,6 +117,35 @@ ReservationRouter.put("/:id", async (req, res) => {
   const { ...data } = req.body;
 
   let reservation = await ReservationSchema.findByIdAndUpdate(id, data, { new: true });
+
+    // Obtener la entrada de MembershipByUser para obtener el paymentID
+    const reser = await ReservationSchema.findById(id);
+    if (!reser) {
+      return res.status(404).send({
+        success: false,
+        message: "Entrada de membresía por usuario no encontrada",
+      });
+    }
+
+    const paymentId = reser.paymentID;
+
+    // Obtener la entrada de MembershipByUser para obtener el paymentID
+    const payment = await PaymentSchema.findById(paymentId);
+    if (!payment) {
+      return res.status(404).send({
+        success: false,
+        message: "Entrada de membresía por usuario no encontrada",
+      });
+    }
+
+    payment.total = req.body.total;
+    payment.paid = req.body.paid;
+    payment.billing = req.body.billing,
+    payment.means_of_payment = req.body.means_of_payment;
+
+    // Guardar el pago en la base de datos
+    await payment.save();
+
 
   res.status(200).send({
     success: true,
