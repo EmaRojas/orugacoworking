@@ -231,6 +231,8 @@ PaymentRouter.put("/:id", async (req, res) => {
   for (const reservation of reservations) {
     if (reservation.paymentID._id.toString() === id) {
       reservation.billing = req.body.billing;
+      reservation.total = req.body.total;
+      reservation.paid = req.body.paid;
       await reservation.save();
     }
   }
@@ -241,6 +243,9 @@ PaymentRouter.put("/:id", async (req, res) => {
   for (const membershipByUser of membershipsByUser) {
     if (membershipByUser.paymentID._id.toString() === id) {
       membershipByUser.billing = req.body.billing;
+      membershipByUser.total = req.body.total;
+      membershipByUser.paid = req.body.paid;
+
       await membershipByUser.save();
     }
   }
