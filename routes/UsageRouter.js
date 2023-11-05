@@ -20,6 +20,13 @@ const UsageRouter = express.Router();
 UsageRouter.post("/", async (req, res) => {
   let { membershipByUserID, hours, startDateTime, endDateTime, member } = req.body;
 
+  const utcArgentina = (value) =>{
+    const date = new Date(value);
+    const difference = -3; // ART está UTC-3
+    const response = new Date(date.getTime() + difference * 60 * 60 * 1000);
+    return response;
+    }
+
   if (!membershipByUserID) {
     return res.status(400).send({
       success: false,
@@ -30,8 +37,8 @@ UsageRouter.post("/", async (req, res) => {
   // Crear el objeto de reservation
   const usage = new UsageSchema({
     membershipByUserID: membershipByUserID,
-    startDateTime: startDateTime,
-    endDateTime: endDateTime,
+    startDateTime: utcArgentina(startDateTime),
+    endDateTime: utcArgentina(endDateTime),
     hours: hours,
     member: member
   });

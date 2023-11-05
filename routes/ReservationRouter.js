@@ -1,6 +1,8 @@
 const express = require("express");
 const ReservationSchema = require("../models/reservation");
 const PaymentSchema = require("../models/payment");
+const MembershipByUserSchema = require("../models/membershipByUser");
+const UsageSchema = require("../models/usage");
 
 const ReservationRouter = express.Router();
 
@@ -265,14 +267,71 @@ ReservationRouter.delete("/:id", async (req, res) => {
     }
 
     const paymentId = reservation.paymentID;
+    const clientId = reservation.clientID._id;
 
-    // Eliminar la reserva
+    console.log(clientId);
+    // Buscar las membresías por el ID del cliente
+    const membershipByUser = await MembershipByUserSchema.findOne({
+      clientID: clientId,
+    });
+
+    
+    // Supongamos que tienes dos fechas en formato estándar de JavaScript
+    const startDate = new Date(reservation.dateTime);
+    const endDate = new Date(reservation.endDateTime);
+    // Calcular la diferencia de tiempo en milisegundos
+    const differenceInMillis = endDate.getTime() - startDate.getTime();
+
+    // Convertir la diferencia de milisegundos a horas y minutos
+    const differenceInHours = Math.floor(differenceInMillis / (1000 * 60 * 60));
+    const differenceInMinutes = Math.floor((differenceInMillis % (1000 * 60 * 60)) / (1000 * 60));
+
+    // Formato para expresar la diferencia en el formato que mencionaste (X.Y)
+    const formattedDifference = parseFloat(`${differenceInHours}.${differenceInMinutes}`).toFixed(1);
+
+    console.log(formattedDifference);
+    console.log(membershipByUser);
+    // Convertir horas y minutos a segundos
+    function convertToSeconds(hours, minutes) {
+      const totalSeconds = (hours * 3600) + (minutes * 60);
+      return totalSeconds;
+    }
+
+    const decimalNumber = parseFloat(formattedDifference);
+
+    const integerPart = Math.floor(decimalNumber);
+
+    const decimalPart = (decimalNumber % 1).toFixed(2);
+    const decimalDigits = decimalPart.substring(2);
+
+    const totalSeconds = convertToSeconds(integerPart, decimalDigits);
+
+    console.log(totalSeconds);
+
+    try {
+      membershipByUser.remaining_hours = membershipByUser.remaining_hours + totalSeconds;
+      await membershipByUser.save();
+      console.log('¡Membresía actualizada correctamente!');
+  } catch (error) {
+      console.error('Error al actualizar la membresía:', error);
+  }
+  
+
+    const usage = await UsageSchema.findOne({
+      membershipByUserID: membershipByUser,
+      startDateTime: startDate
+    });
+
+    await UsageSchema.deleteOne({ _id: usage._id });
+
+  // Eliminar la reserva
     await ReservationSchema.findByIdAndDelete(id);
 
     // Si se encontró un paymentId, eliminar el pago asociado
     if (paymentId) {
       await PaymentSchema.findByIdAndDelete(paymentId);
     }
+
 
     res.status(200).send({
       success: true,
