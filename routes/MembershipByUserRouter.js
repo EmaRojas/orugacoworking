@@ -92,6 +92,36 @@ MembershipByUserRouter.get("/", async (req, res) => {
 });
 
 
+// Endpoint para obtener la suma de 'total' y 'paid' de membresías activas
+MembershipByUserRouter.get("/totals", async (req, res) => {
+  try {
+    const memberships = await MembershipByUserSchema.find({ status: 'Activa' });
+
+    let totalSum = 0;
+    let paidSum = 0;
+
+    memberships.forEach(membership => {
+      totalSum += parseFloat(membership.total) || 0;
+      paidSum += parseFloat(membership.paid) || 0;
+    });
+
+    const count = memberships.length;
+
+    res.status(200).send({
+      success: true,
+      total: totalSum,
+      paid: paidSum,
+      count: count
+    });
+
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
 /**
  * @typedef {object} MembershipByUser
  * @property {string} hours.required
