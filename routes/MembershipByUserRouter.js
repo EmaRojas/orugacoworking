@@ -143,7 +143,6 @@ MembershipByUserRouter.post("/useHours/:id", async (req, res) => {
       membershipByUser.remaining_hours -= totalSeconds;
     }
     
-
     // Guarda el objeto actualizado en la base de datos
     await membershipByUser.save();
 
@@ -181,8 +180,29 @@ MembershipByUserRouter.post("/useHours/:id", async (req, res) => {
 MembershipByUserRouter.put("/:id", async (req, res) => {
   const { id } = req.params;
   const { ...data } = req.body;
-
+  console.log(req.body);
   let membershipByUser = await MembershipByUserSchema.findByIdAndUpdate(id, data, { new: true });
+  
+  
+  const membership = await MembershipByUserSchema.findById(id);
+
+  const paymentId = membership.paymentID;
+
+  // Obtener la entrada de MembershipByUser para obtener el paymentID
+  const payment = await PaymentSchema.findById(paymentId);
+  if (!payment) {
+    return res.status(404).send({
+      success: false,
+      message: "Entrada de membresía por usuario no encontrada",
+    });
+  }
+
+  payment.total = req.body.total;
+  payment.paid = req.body.paid;
+  payment.billing = req.body.billing,
+
+  // Guardar el pago en la base de datos
+  await payment.save();
 
   res.status(200).send({
     success: true,
