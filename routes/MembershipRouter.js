@@ -1,6 +1,8 @@
 const express = require("express");
 const membershipSchema = require("../models/membership");
 const MembershipRouter = express.Router();
+const MembershipByUserSchema = require("../models/membershipByUser");
+const PaymentSchema = require("../models/payment");
 
 
 /**
@@ -94,6 +96,27 @@ MembershipRouter.put("/:id", async (req, res) => {
 MembershipRouter.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
+
+    try {
+      const membershipsByUser = await MembershipByUserSchema.find({}).populate('membershipID');
+    
+      // Itera sobre todas las membershipsByUser y elimina las que tengan el membershipID especificado
+      for (const membershipByUser of membershipsByUser) {
+        if (membershipByUser.membershipID._id.toString() === id) {
+          console.log(membershipByUser.membershipID._id.toString());
+          await MembershipByUserSchema.findByIdAndDelete(membershipByUser._id);
+          const paymentId = membershipByUser.paymentID;
+          await PaymentSchema.findByIdAndDelete(paymentId);
+
+        }
+      }
+    
+      console.log('Operación completada con éxito.');
+    
+    } catch (error) {
+      console.error('Error al intentar eliminar registros:', error.message);
+    }
+
     await membershipSchema.findByIdAndDelete(id);
     res.status(200).send({
       success: true,

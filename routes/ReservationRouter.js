@@ -26,6 +26,8 @@ ReservationRouter.post("/", async (req, res) => {
 
   console.log(req.body.priceRoomID);
 
+
+
   if (!reservation.clientID || !reservation.roomID) {
     return res.status(400).send({
       success: false,
@@ -90,7 +92,7 @@ ReservationRouter.post("/", async (req, res) => {
  * @return {object} 400 - Bad request response
  */
 ReservationRouter.get("/", async (req, res) => {
-  let reservations = await ReservationSchema.find({}).populate('clientID').populate('priceRoomID').populate('paymentID').populate('roomID');
+  let reservations = await ReservationSchema.find({}).populate('clientID').populate('priceRoomID').populate('paymentID').populate('roomID').sort({ dateTime: 1 });
   return res.status(200).send({
     success: true,
     reservations
@@ -270,6 +272,7 @@ ReservationRouter.delete("/:id", async (req, res) => {
     const clientId = reservation.clientID._id;
 
     console.log(clientId);
+    if(!paymentId) {
     // Buscar las membresías por el ID del cliente
     const membershipByUser = await MembershipByUserSchema.findOne({
       clientID: clientId,
@@ -323,6 +326,8 @@ ReservationRouter.delete("/:id", async (req, res) => {
     });
 
     await UsageSchema.deleteOne({ _id: usage._id });
+
+    }
 
   // Eliminar la reserva
     await ReservationSchema.findByIdAndDelete(id);
@@ -408,7 +413,7 @@ ReservationRouter.post("/filter", async (req, res) => {
       },
     };
 
-  let reservations = await ReservationSchema.find(query).populate('clientID').populate('priceRoomID').populate('paymentID').populate('roomID');
+  let reservations = await ReservationSchema.find(query).populate('clientID').populate('priceRoomID').populate('paymentID').populate('roomID').sort({ dateTime: 1 });
   return res.status(200).send({
     success: true,
     reservations

@@ -113,6 +113,8 @@ RoomRouter.delete("/:id", async (req, res) => {
     for (const membershipByUser of membershipsByUser) {
       if (membershipByUser.roomID._id.toString() === id) {
         await membershipByUserSchema.findByIdAndDelete(membershipByUser._id);
+        const paymentId = membershipByUser.paymentID;
+        await paymentSchema.findByIdAndDelete(paymentId._id);
       }
     }
 

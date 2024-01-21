@@ -188,7 +188,7 @@ PaymentRouter.post("/filter", async (req, res) => {
           },
         },
       },
-    ]);
+    ]).sort({ created: 1 });
 
     const combinedPayments = paymentsWithReservations.concat(
       paymentsWithMemberships
@@ -229,7 +229,7 @@ PaymentRouter.put("/:id", async (req, res) => {
 
   // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
   for (const reservation of reservations) {
-    if (reservation.paymentID._id.toString() === id) {
+    if (reservation.paymentID && reservation.paymentID._id.toString() === id) {
       reservation.billing = req.body.billing;
       reservation.total = req.body.total;
       reservation.paid = req.body.paid;
