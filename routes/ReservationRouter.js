@@ -272,7 +272,7 @@ ReservationRouter.delete("/:id", async (req, res) => {
     const clientId = reservation.clientID._id;
 
     console.log(clientId);
-    if(!paymentId) {
+    if(!reservation.paymentID) {
     // Buscar las membresías por el ID del cliente
     const membershipByUser = await MembershipByUserSchema.findOne({
       clientID: clientId,
