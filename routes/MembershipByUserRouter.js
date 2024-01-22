@@ -4,6 +4,7 @@ const MembershipByUserRouter = express.Router();
 const PaymentSchema = require("../models/payment");
 const ClientSchema = require("../models/client");
 const usageSchema = require("../models/usage");
+const ReservationSchema = require("../models/reservation");
 
 
 /**
@@ -253,6 +254,23 @@ MembershipByUserRouter.delete("/:id", async (req, res) => {
     const { id } = req.params;
 
     const usages = await usageSchema.find({}).populate('membershipByUserID');
+
+    // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
+    for (const usage of usages) {
+      if (usage.membershipByUserID._id.toString() === id) {
+        await usageSchema.findByIdAndDelete(usage._id);
+      }
+    }
+
+
+    
+    const reservations = await ReservationSchema.find({ membershipID: id });    // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
+    for (const reservation of reservations) {
+        console.log(reservation._id);
+        await ReservationSchema.findByIdAndDelete(reservation._id);
+      
+    }
+
 
     // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
     for (const usage of usages) {

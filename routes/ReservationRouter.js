@@ -198,7 +198,8 @@ ReservationRouter.post("/membership", async (req, res) => {
       time: req.body.time,
       endTime: req.body.endTime,
       roomID: req.body.roomID,
-      note: req.body.note
+      note: req.body.note,
+      membershipID: req.body.membershipId
     });
   
     // Guardar la reserva en la base de datos

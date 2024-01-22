@@ -32,6 +32,10 @@ const ReservationSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref:"Payment"
     },
+    membershipID:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref:"MembershipByUser"
+    },
     billing:{
         type:String
     },
