@@ -23,57 +23,74 @@ const ReservationSchema = require("../models/reservation");
  * @return {object} 200 - song response
  */
 MembershipByUserRouter.post("/", async (req, res) => {
+    // Buscar el cliente por su dirección de correo electrónico
+    let clientID = req.body.clientID;
+    const client = await ClientSchema.findById(clientID);
 
-  if (!req.body.clientID || !req.body.membershipID) {
+
+    if (!client) {
+      return res.status(404).send({
+        success: false,
+        message: "Cliente no encontrado",
+      });
+    }
+
+    // Buscar las membresías por el ID del cliente
+    const membership = await MembershipByUserSchema.findOne({
+      clientID: client._id,
+      status: 'Activa'
+    });
+
+  if (!req.body.clientID || !req.body.membershipID || membership) {
+    console.log("ya existe una membresia activa");
     return res.status(400).send({
       success: false,
       message: "Faltan datos de completar"
     });
+  } else {
+    const dateUtc = new Date();
+    const difference = -3; // ART está UTC-3
+    const dateArgentina = new Date(dateUtc.getTime() + difference * 60 * 60 * 1000);
+
+
+    // Crear el objeto de pago
+    const payment = new PaymentSchema({
+      means_of_payment: req.body.means_of_payment,
+      total: req.body.total,
+      paid: req.body.paid,                            
+      status: 'Pagado',
+      created: dateArgentina,
+      billing: req.body.billing
+    });
+
+    // Guardar el pago en la base de datos
+    await payment.save();
+
+    // Crear el objeto de reservation
+    const membershipByUser = new MembershipByUserSchema({
+      clientID: req.body.clientID,
+      membershipID: req.body.membershipID,
+      roomID: req.body.roomID,
+      created: dateArgentina,
+      paymentID: payment._id,
+      status: 'Activa', 
+      total_hours: req.body.hours * 3600,
+      remaining_hours: req.body.hours * 3600,
+      billing: req.body.billing,
+      total: req.body.total,
+      paid: req.body.paid
+    });
+
+    await membershipByUser.save()
+    .then((data) => res.status(200).send({
+     success: true,
+     data
+    }))
+    .catch((error) => res.status(500).send({
+     success: false,
+     message: error.message,
+    }));
   }
-
-      const dateUtc = new Date();
-      const difference = -3; // ART está UTC-3
-      const dateArgentina = new Date(dateUtc.getTime() + difference * 60 * 60 * 1000);
-
-
-      // Crear el objeto de pago
-      const payment = new PaymentSchema({
-        means_of_payment: req.body.means_of_payment,
-        total: req.body.total,
-        paid: req.body.paid,                            
-        status: 'Pagado',
-        created: dateArgentina,
-        billing: req.body.billing
-      });
-  
-      // Guardar el pago en la base de datos
-      await payment.save();
-
-      // Crear el objeto de reservation
-      const membershipByUser = new MembershipByUserSchema({
-        clientID: req.body.clientID,
-        membershipID: req.body.membershipID,
-        roomID: req.body.roomID,
-        created: dateArgentina,
-        paymentID: payment._id,
-        status: 'Activa', 
-        total_hours: req.body.hours * 3600,
-        remaining_hours: req.body.hours * 3600,
-        billing: req.body.billing,
-        total: req.body.total,
-        paid: req.body.paid
-      });
-
-      await membershipByUser.save()
-      .then((data) => res.status(200).send({
-       success: true,
-       data
-      }))
-      .catch((error) => res.status(500).send({
-       success: false,
-       message: error.message,
-      }));
-
 });
 
 //get all
@@ -157,7 +174,13 @@ MembershipByUserRouter.post("/useHours/:id", async (req, res) => {
 
     const totalSeconds = convertToSeconds(integerPart, decimalDigits);
 
-    let membershipByUser = await MembershipByUserSchema.findById(id);
+    //let membershipByUser = await MembershipByUserSchema.findById(id);
+
+    // Buscar las membresías por el ID del cliente
+    const membershipByUser = await MembershipByUserSchema.findOne({
+      _id: id,
+      status: 'Activa'
+    });
 
     if (!membershipByUser) {
       return res.status(404).send({
@@ -166,21 +189,27 @@ MembershipByUserRouter.post("/useHours/:id", async (req, res) => {
       });
     }
 
-    if(totalSeconds >= membershipByUser.remaining_hours) {
-      membershipByUser.remaining_hours = 0;
-      membershipByUser.status = 'Finalizada'
-    }
-    else {
+    if(totalSeconds > membershipByUser.remaining_hours) {
+      return res.status(404).send({
+        success: false,
+        message: "No tiene las horas suficientes para hacer esta reserva"
+      });
+    } else {
       membershipByUser.remaining_hours -= totalSeconds;
-    }
-    
-    // Guarda el objeto actualizado en la base de datos
-    await membershipByUser.save();
 
-    return res.status(200).send({
-      success: true,
-      membershipByUser
-    });
+      if(totalSeconds >= membershipByUser.remaining_hours) {
+        membershipByUser.remaining_hours = 0;
+        membershipByUser.status = 'Finalizada'
+      }
+      // Guarda el objeto actualizado en la base de datos
+      await membershipByUser.save();
+  
+      return res.status(200).send({
+        success: true,
+        membershipByUser
+      });
+    }  
+
   } catch (error) {
     console.error(error);
     return res.status(500).send({
@@ -211,7 +240,6 @@ MembershipByUserRouter.post("/useHours/:id", async (req, res) => {
 MembershipByUserRouter.put("/:id", async (req, res) => {
   const { id } = req.params;
   const { ...data } = req.body;
-  console.log(req.body);
   let membershipByUser = await MembershipByUserSchema.findByIdAndUpdate(id, data, { new: true });
   
   
@@ -336,6 +364,7 @@ MembershipByUserRouter.get("/client/:email", async (req, res) => {
     // Buscar las membresías por el ID del cliente
     const memberships = await MembershipByUserSchema.find({
       clientID: client._id,
+      status: 'Activa'
     }).populate("membershipID").populate("paymentID").populate("roomID");
 
     res.status(200).send({

@@ -277,8 +277,8 @@ ReservationRouter.delete("/:id", async (req, res) => {
     // Buscar las membresías por el ID del cliente
     const membershipByUser = await MembershipByUserSchema.findOne({
       clientID: clientId,
+      status: 'Activa'
     });
-
     
     // Supongamos que tienes dos fechas en formato estándar de JavaScript
     const startDate = new Date(reservation.dateTime);
