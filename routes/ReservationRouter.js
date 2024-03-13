@@ -279,6 +279,7 @@ ReservationRouter.delete("/:id", async (req, res) => {
       clientID: clientId,
       status: 'Activa'
     });
+
     
     // Supongamos que tienes dos fechas en formato estándar de JavaScript
     const startDate = new Date(reservation.dateTime);
@@ -321,22 +322,26 @@ ReservationRouter.delete("/:id", async (req, res) => {
   }
   
 
-    const usage = await UsageSchema.findOne({
-      membershipByUserID: membershipByUser,
-      startDateTime: startDate
-    });
+    // const usage = await UsageSchema.findOne({
+    //   membershipByUserID: membershipByUser,
+    //   startDateTime: startDate
+    // });
 
-    await UsageSchema.deleteOne({ _id: usage._id });
-
-    }
-
-  // Eliminar la reserva
+    // await UsageSchema.deleteOne({ _id: usage._id });
     await ReservationSchema.findByIdAndDelete(id);
+
+    } else {
+
 
     // Si se encontró un paymentId, eliminar el pago asociado
     if (paymentId) {
       await PaymentSchema.findByIdAndDelete(paymentId);
     }
+    // Eliminar la reserva
+    await ReservationSchema.findByIdAndDelete(id);
+
+    }
+
 
 
     res.status(200).send({

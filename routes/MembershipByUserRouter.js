@@ -281,14 +281,14 @@ MembershipByUserRouter.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    const usages = await usageSchema.find({}).populate('membershipByUserID');
+    // const usages = await usageSchema.find({}).populate('membershipByUserID');
 
-    // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
-    for (const usage of usages) {
-      if (usage.membershipByUserID._id.toString() === id) {
-        await usageSchema.findByIdAndDelete(usage._id);
-      }
-    }
+    // // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
+    // for (const usage of usages) {
+    //   if (usage.membershipByUserID._id.toString() === id) {
+    //     await usageSchema.findByIdAndDelete(usage._id);
+    //   }
+    // }
 
 
     
@@ -300,12 +300,12 @@ MembershipByUserRouter.delete("/:id", async (req, res) => {
     }
 
 
-    // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
-    for (const usage of usages) {
-      if (usage.membershipByUserID._id.toString() === id) {
-        await usageSchema.findByIdAndDelete(usage._id);
-      }
-    }
+    // // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
+    // for (const usage of usages) {
+    //   if (usage.membershipByUserID._id.toString() === id) {
+    //     await usageSchema.findByIdAndDelete(usage._id);
+    //   }
+    // }
 
     // Obtener la entrada de MembershipByUser para obtener el paymentID
     const membershipByUser = await MembershipByUserSchema.findById(id);
