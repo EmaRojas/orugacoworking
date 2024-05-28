@@ -1,11 +1,10 @@
 const express = require("express");
 const ReservationSchema = require("../models/reservation");
-const PaymentSchema = require("../models/payment");
 const MembershipByUserSchema = require("../models/membershipByUser");
-const UsageSchema = require("../models/usage");
 
 const ReservationRouter = express.Router();
-
+// var moment = require('moment-timezone');
+// moment().tz("America/Buenos_Aires").format();
 
 /**
  * @typedef {object} Reservation
@@ -24,64 +23,139 @@ const ReservationRouter = express.Router();
 ReservationRouter.post("/", async (req, res) => {
   const reservation = ReservationSchema(req.body);
 
-  console.log(req.body.priceRoomID);
-
-
-
-  if (!reservation.clientID || !reservation.roomID) {
+  if (!reservation.clientID) {
     return res.status(400).send({
       success: false,
       message: "Faltan datos de completar"
     });
   }
 
-      const dateUtc = new Date();
-      const difference = -3; // ART está UTC-3
-      const dateArgentina = new Date(dateUtc.getTime() + difference * 60 * 60 * 1000);
+  console.log(req.body);
 
-      var state = 'Pendiente';
-      if(req.body.total == req.body.paid) {
-        state = 'Pagado';
-      }
-      // Crear el objeto de pago
-      const payment = new PaymentSchema({
-        means_of_payment: req.body.means_of_payment,
-        total: req.body.total,
-        paid: req.body.paid,                            
-        status: state,
-        created: dateArgentina,
-        billing: req.body.billing
-      });
-  
-      // Guardar el pago en la base de datos
-      await payment.save();
-      console.log(req.body.dateTime);
-      // Crear el objeto de reservation
-      const reserva = new ReservationSchema({
-        clientID: req.body.clientID,
-        priceRoomID: req.body.priceRoomID,
-        roomID: req.body.roomID,
-        dateTime: req.body.dateTime,
-        endDateTime: req.body.endDateTime,
-        date: req.body.date,
-        time: req.body.time,
-        endTime: req.body.endTime,
-        paymentID: payment._id,
-        billing: req.body.billing,
-        note: req.body.note
-      });
+  // Crear el objeto de reservation
+  const reserva = new ReservationSchema({
+    clientID: req.body.clientID,
+    room: req.body.room,
+    startDateTime: req.body.startDateTime,
+    endDateTime: req.body.endDateTime,
+    date: req.body.date,
+    dateString: req.body.dateString,
+    time: req.body.time,
+    endTime: req.body.endTime,
+    paymentMethod: req.body.paymentMethod,
+    total: req.body.total,
+    paid: req.body.paid,
+    billing: req.body.billing,
+    note: req.body.note
+  });
 
-      // Guardar la reserva en la base de datos
-      await reserva.save()
-      .then((data) => res.status(200).send({
-       success: true,
-       data
-      }))
-      .catch((error) => res.status(500).send({
-       success: false,
-       message: error.message,
-      }));
+  // Guardar la reserva en la base de datos
+  await reserva.save()
+    .then((data) => res.status(200).send({
+      success: true,
+      data
+    }))
+    .catch((error) => res.status(500).send({
+      success: false,
+      message: error.message,
+    }));
+
 });
+
+
+/**
+ * POST /api/v1/reservation
+ * @tags Reservation
+ * @summary Crear nueva reserva
+ * @param {Reservation} request.body.required
+ * @return {object} 200 - song response
+ */
+ReservationRouter.post("/createMembership", async (req, res) => {
+  const reservation = ReservationSchema(req.body);
+
+  if (!reservation.clientID) {
+    return res.status(400).send({
+      success: false,
+      message: "Faltan datos de completar"
+    });
+  }
+
+  if (reservation.membershipID) {
+    // Buscar las membresías por el ID del cliente
+    const membershipByUser = await MembershipByUserSchema.findOne({
+      _id: reservation.membershipID,
+      status: 'Activa'
+    });
+
+    console.log(membershipByUser);
+
+    // Supongamos que tienes dos fechas en formato estándar de JavaScript
+    const startDate = new Date(reservation.startDateTime);
+    const endDate = new Date(reservation.endDateTime);
+    // Calcular la diferencia de tiempo en milisegundos
+    const differenceInMillis = endDate.getTime() - startDate.getTime();
+
+    // Convertir la diferencia de milisegundos a horas y minutos
+    const differenceInHours = Math.floor(differenceInMillis / (1000 * 60 * 60));
+    const differenceInMinutes = Math.floor((differenceInMillis % (1000 * 60 * 60)) / (1000 * 60));
+
+    // Formato para expresar la diferencia en el formato que mencionaste (X.Y)
+    const formattedDifference = parseFloat(`${differenceInHours}.${differenceInMinutes}`).toFixed(1);
+
+    console.log(formattedDifference);
+    console.log(membershipByUser);
+    // Convertir horas y minutos a segundos
+    function convertToSeconds(hours, minutes) {
+      const totalSeconds = (hours * 3600) + (minutes * 60);
+      return totalSeconds;
+    }
+
+    const decimalNumber = parseFloat(formattedDifference);
+    const integerPart = Math.floor(decimalNumber);
+    const decimalPart = (decimalNumber % 1).toFixed(2);
+    const decimalDigits = decimalPart.substring(2);
+
+    const totalSeconds = convertToSeconds(integerPart, decimalDigits);
+    console.log(totalSeconds);
+
+    membershipByUser.remaining_hours = membershipByUser.remaining_hours - totalSeconds;
+    await membershipByUser.save();
+    console.log('¡Membresía actualizada correctamente!');
+  }
+
+  console.log(req.body);
+
+  // Crear el objeto de reservation
+  const reserva = new ReservationSchema({
+    clientID: req.body.clientID,
+    membershipID: req.body.membershipID,
+    room: req.body.room,
+    startDateTime: req.body.startDateTime,
+    endDateTime: req.body.endDateTime,
+    date: req.body.date,
+    dateString: req.body.dateString,
+    time: req.body.time,
+    endTime: req.body.endTime,
+    paymentMethod: req.body.paymentMethod,
+    total: req.body.total,
+    paid: req.body.paid,
+    billing: req.body.billing,
+    note: req.body.note
+  });
+
+  // Guardar la reserva en la base de datos
+  await reserva.save()
+    .then((data) => res.status(200).send({
+      success: true,
+      data
+    }))
+    .catch((error) => res.status(500).send({
+      success: false,
+      message: error.message,
+    }));
+
+});
+
 
 //get all
 /**
@@ -92,7 +166,7 @@ ReservationRouter.post("/", async (req, res) => {
  * @return {object} 400 - Bad request response
  */
 ReservationRouter.get("/", async (req, res) => {
-  let reservations = await ReservationSchema.find({}).populate('clientID').populate('priceRoomID').populate('paymentID').populate('roomID').sort({ dateTime: 1 });
+  let reservations = await ReservationSchema.find({}).populate('clientID').sort({ dateTime: 1 });
   return res.status(200).send({
     success: true,
     reservations
@@ -118,37 +192,34 @@ ReservationRouter.get("/", async (req, res) => {
  */
 ReservationRouter.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const { ...data } = req.body;
 
-  let reservation = await ReservationSchema.findByIdAndUpdate(id, data, { new: true });
+  // Obtener la entrada de MembershipByUser para obtener el paymentID
+  const reservation = await ReservationSchema.findById(id);
+  if (!reservation) {
+    return res.status(404).send({
+      success: false,
+      message: "Entrada de membresía por usuario no encontrada",
+    });
+  }
 
-    // Obtener la entrada de MembershipByUser para obtener el paymentID
-    const reser = await ReservationSchema.findById(id);
-    if (!reser) {
-      return res.status(404).send({
-        success: false,
-        message: "Entrada de membresía por usuario no encontrada",
-      });
-    }
+  console.log(req.body);
 
-    const paymentId = reser.paymentID;
+  reservation.room = req.body.room;
+  reservation.startDateTime = req.body.startDateTime;
+  reservation.endDateTime = req.body.endDateTime;
+  reservation.date = req.body.date;
+  reservation.dateString = req.body.dateString;
+  reservation.time = req.body.time;
+  reservation.endTime = req.body.endTime;
+  reservation.paymentMethod = req.body.paymentMethod;
+  reservation.total = req.body.total;
+  reservation.paid = req.body.paid;
+  reservation.billing = req.body.billing;
+  reservation.note = req.body.note;
 
-    // Obtener la entrada de MembershipByUser para obtener el paymentID
-    const payment = await PaymentSchema.findById(paymentId);
-    if (!payment) {
-      return res.status(404).send({
-        success: false,
-        message: "Entrada de membresía por usuario no encontrada",
-      });
-    }
 
-    payment.total = req.body.total;
-    payment.paid = req.body.paid;
-    payment.billing = req.body.billing,
-    payment.means_of_payment = req.body.means_of_payment;
-
-    // Guardar el pago en la base de datos
-    await payment.save();
+  // Guardar el pago en la base de datos
+  await reservation.save();
 
 
   res.status(200).send({
@@ -158,12 +229,108 @@ ReservationRouter.put("/:id", async (req, res) => {
   });
 });
 
-const utcArgentina = (value) =>{
-  const date = new Date(value);
-  const difference = -3; // ART está UTC-3
-  const response = new Date(date.getTime() + difference * 60 * 60 * 1000);
-  return response;
+/**
+ * PUT /api/v1/reservation/membership/{id}
+ * @tags Reservation
+ * @summary Actualizar reserva membresia
+ * @param {string} id.path - id
+ * @param {Reservation} request.body.required
+ * @return {string} 200 - success response
+ */
+ReservationRouter.put("/membership/:id", async (req, res) => {
+  const { id } = req.params;
+
+  // Obtener la entrada de MembershipByUser para obtener el paymentID
+  const reservation = await ReservationSchema.findById(id);
+  if (!reservation) {
+    return res.status(404).send({
+      success: false,
+      message: "Entrada de membresía por usuario no encontrada",
+    });
   }
+
+  if (reservation.membershipID) {
+    // Buscar las membresías por el ID del cliente
+    const membershipByUser = await MembershipByUserSchema.findOne({
+      _id: reservation.membershipID,
+      status: 'Activa'
+    });
+
+  // Supongamos que tienes dos fechas en formato estándar de JavaScript
+  const startDate = new Date(reservation.startDateTime);
+  const endDate = new Date(reservation.endDateTime);
+  // Calcular la diferencia de tiempo en milisegundos
+  const differenceInMillis = endDate.getTime() - startDate.getTime();
+
+  // Convertir la diferencia de milisegundos a horas y minutos
+  const differenceInHours = Math.floor(differenceInMillis / (1000 * 60 * 60));
+  const differenceInMinutes = Math.floor((differenceInMillis % (1000 * 60 * 60)) / (1000 * 60));
+
+  // Formato para expresar la diferencia en el formato que mencionaste (X.Y)
+  const formattedDifference = parseFloat(`${differenceInHours}.${differenceInMinutes}`).toFixed(1);
+
+  console.log(formattedDifference);
+  console.log(membershipByUser);
+  // Convertir horas y minutos a segundos
+  function convertToSeconds(hours, minutes) {
+    const totalSeconds = (hours * 3600) + (minutes * 60);
+    return totalSeconds;
+  }
+
+  const decimalNumber = parseFloat(formattedDifference);
+  const integerPart = Math.floor(decimalNumber);
+  const decimalPart = (decimalNumber % 1).toFixed(2);
+  const decimalDigits = decimalPart.substring(2);
+
+  const totalSeconds = convertToSeconds(integerPart, decimalDigits);
+  console.log(totalSeconds);
+
+  membershipByUser.remaining_hours = membershipByUser.remaining_hours + totalSeconds;
+  await membershipByUser.save();
+
+  // Supongamos que tienes dos fechas en formato estándar de JavaScript
+  const startDateReq = new Date(req.body.startDateTime);
+  const endDateReq = new Date(req.body.endDateTime);
+  // Calcular la diferencia de tiempo en milisegundos
+  const differenceInMillisReq = endDateReq.getTime() - startDateReq.getTime();
+
+  // Convertir la diferencia de milisegundos a horas y minutos
+  const differenceInHoursReq = Math.floor(differenceInMillisReq / (1000 * 60 * 60));
+  const differenceInMinutesReq = Math.floor((differenceInMillisReq % (1000 * 60 * 60)) / (1000 * 60));
+
+  // Formato para expresar la diferencia en el formato que mencionaste (X.Y)
+  const formattedDifferenceReq = parseFloat(`${differenceInHoursReq}.${differenceInMinutesReq}`).toFixed(1);
+
+  const decimalNumberReq = parseFloat(formattedDifferenceReq);
+  const integerPartReq = Math.floor(decimalNumberReq);
+  const decimalPartReq = (decimalNumberReq % 1).toFixed(2);
+  const decimalDigitsReq = decimalPartReq.substring(2);
+
+  const totalSecondsReq = convertToSeconds(integerPartReq, decimalDigitsReq);
+  console.log(totalSecondsReq);
+
+  membershipByUser.remaining_hours = membershipByUser.remaining_hours - totalSecondsReq;
+  await membershipByUser.save();
+  }
+
+  reservation.startDateTime = req.body.startDateTime;
+  reservation.endDateTime = req.body.endDateTime;
+  reservation.date = req.body.date;
+  reservation.dateString = req.body.dateString;
+  reservation.time = req.body.time;
+  reservation.endTime = req.body.endTime;
+  reservation.note = req.body.note;
+
+  // Guardar el pago en la base de datos
+  await reservation.save();
+
+
+  res.status(200).send({
+    success: true,
+    message: "Reserva modificado!",
+    reservation
+  });
+});
 
 /**
  * @typedef {object} Reservation
@@ -180,39 +347,6 @@ const utcArgentina = (value) =>{
 */
 
 
-ReservationRouter.post("/membership", async (req, res) => {
-  const reservation = ReservationSchema(req.body);
-  if (!reservation.clientID) {
-    return res.status(400).send({
-    success: false,
-    message: "Faltan datos de completar"
-    });
-    }
-  
-    // Crear el objeto de reservation
-    const reserva = new ReservationSchema({
-      clientID: req.body.clientID,
-      dateTime: utcArgentina(req.body.dateTime),
-      endDateTime: utcArgentina(req.body.endDateTime),
-      date: req.body.date,
-      time: req.body.time,
-      endTime: req.body.endTime,
-      roomID: req.body.roomID,
-      note: req.body.note,
-      membershipID: req.body.membershipId
-    });
-  
-    // Guardar la reserva en la base de datos
-    await reserva.save()
-    .then((data) => res.status(200).send({
-     success: true,
-     data
-    }))
-    .catch((error) => res.status(500).send({
-     success: false,
-     message: error.message,
-    })); 
-  });
 
 //get client reservations
 /**
@@ -269,79 +403,51 @@ ReservationRouter.delete("/:id", async (req, res) => {
       });
     }
 
-    const paymentId = reservation.paymentID;
-    const clientId = reservation.clientID._id;
 
-    console.log(clientId);
-    if(!reservation.paymentID) {
-    // Buscar las membresías por el ID del cliente
-    const membershipByUser = await MembershipByUserSchema.findOne({
-      clientID: clientId,
-      status: 'Activa'
-    });
+    if (reservation.membershipID) {
+      // Buscar las membresías por el ID del cliente
+      const membershipByUser = await MembershipByUserSchema.findOne({
+        _id: reservation.membershipID,
+        status: 'Activa'
+      });
 
-    
-    // Supongamos que tienes dos fechas en formato estándar de JavaScript
-    const startDate = new Date(reservation.dateTime);
-    const endDate = new Date(reservation.endDateTime);
-    // Calcular la diferencia de tiempo en milisegundos
-    const differenceInMillis = endDate.getTime() - startDate.getTime();
+      console.log(membershipByUser);
 
-    // Convertir la diferencia de milisegundos a horas y minutos
-    const differenceInHours = Math.floor(differenceInMillis / (1000 * 60 * 60));
-    const differenceInMinutes = Math.floor((differenceInMillis % (1000 * 60 * 60)) / (1000 * 60));
+      // Supongamos que tienes dos fechas en formato estándar de JavaScript
+      const startDate = new Date(reservation.startDateTime);
+      const endDate = new Date(reservation.endDateTime);
+      // Calcular la diferencia de tiempo en milisegundos
+      const differenceInMillis = endDate.getTime() - startDate.getTime();
 
-    // Formato para expresar la diferencia en el formato que mencionaste (X.Y)
-    const formattedDifference = parseFloat(`${differenceInHours}.${differenceInMinutes}`).toFixed(1);
+      // Convertir la diferencia de milisegundos a horas y minutos
+      const differenceInHours = Math.floor(differenceInMillis / (1000 * 60 * 60));
+      const differenceInMinutes = Math.floor((differenceInMillis % (1000 * 60 * 60)) / (1000 * 60));
 
-    console.log(formattedDifference);
-    console.log(membershipByUser);
-    // Convertir horas y minutos a segundos
-    function convertToSeconds(hours, minutes) {
-      const totalSeconds = (hours * 3600) + (minutes * 60);
-      return totalSeconds;
-    }
+      // Formato para expresar la diferencia en el formato que mencionaste (X.Y)
+      const formattedDifference = parseFloat(`${differenceInHours}.${differenceInMinutes}`).toFixed(1);
 
-    const decimalNumber = parseFloat(formattedDifference);
+      console.log(formattedDifference);
+      console.log(membershipByUser);
+      // Convertir horas y minutos a segundos
+      function convertToSeconds(hours, minutes) {
+        const totalSeconds = (hours * 3600) + (minutes * 60);
+        return totalSeconds;
+      }
 
-    const integerPart = Math.floor(decimalNumber);
+      const decimalNumber = parseFloat(formattedDifference);
+      const integerPart = Math.floor(decimalNumber);
+      const decimalPart = (decimalNumber % 1).toFixed(2);
+      const decimalDigits = decimalPart.substring(2);
 
-    const decimalPart = (decimalNumber % 1).toFixed(2);
-    const decimalDigits = decimalPart.substring(2);
+      const totalSeconds = convertToSeconds(integerPart, decimalDigits);
+      console.log(totalSeconds);
 
-    const totalSeconds = convertToSeconds(integerPart, decimalDigits);
-
-    console.log(totalSeconds);
-
-    try {
       membershipByUser.remaining_hours = membershipByUser.remaining_hours + totalSeconds;
       await membershipByUser.save();
       console.log('¡Membresía actualizada correctamente!');
-  } catch (error) {
-      console.error('Error al actualizar la membresía:', error);
-  }
-  
-
-    // const usage = await UsageSchema.findOne({
-    //   membershipByUserID: membershipByUser,
-    //   startDateTime: startDate
-    // });
-
-    // await UsageSchema.deleteOne({ _id: usage._id });
-    await ReservationSchema.findByIdAndDelete(id);
-
-    } else {
-
-
-    // Si se encontró un paymentId, eliminar el pago asociado
-    if (paymentId) {
-      await PaymentSchema.findByIdAndDelete(paymentId);
-    }
-    // Eliminar la reserva
-    await ReservationSchema.findByIdAndDelete(id);
-
     }
 
+    await ReservationSchema.findByIdAndDelete(id);
 
 
     res.status(200).send({
@@ -413,13 +519,13 @@ ReservationRouter.post("/filter", async (req, res) => {
 
     // Consulta para encontrar las reservas dentro del rango de fechas
     const query = {
-      dateTime: {
+      startDateTime: {
         $gte: new Date(startDate),
         $lte: new Date(endDate),
       },
     };
 
-  let reservations = await ReservationSchema.find(query).populate('clientID').populate('priceRoomID').populate('paymentID').populate('roomID').sort({ dateTime: 1 });
+  let reservations = await ReservationSchema.find(query).populate('clientID').sort({ dateTime: 1 });
   return res.status(200).send({
     success: true,
     reservations
@@ -434,13 +540,11 @@ ReservationRouter.get("/current", async (req, res) => {
 
   try {
     const reservations = await ReservationSchema.find({
-      dateTime: { $lte: now }, // La reserva ha comenzado (fecha y hora de inicio es anterior o igual a ahora)
+      startDateTime: { $lte: now }, // La reserva ha comenzado (fecha y hora de inicio es anterior o igual a ahora)
       endDateTime: { $gte: now } // La reserva aún no ha terminado (fecha y hora de fin es posterior o igual a ahora)
     })
     .populate("clientID")
-    .populate("priceRoomID")
-    .populate("paymentID")
-    .populate("roomID");
+
 
     return res.status(200).send({
       success: true,

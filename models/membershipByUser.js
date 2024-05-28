@@ -7,19 +7,12 @@ const MembershipByUserSchema = new mongoose.Schema({
         ref:"Client",
         require: true
     },
-    membershipID:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref:"Membership",
+    name:{
+        type:String,
         require: true
     },
-    roomID:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref:"Room",
-        require: true
-    },
-    paymentID:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref:"Payment",
+    room:{
+        type:String,
         require: true
     },
     created:{
@@ -42,6 +35,10 @@ const MembershipByUserSchema = new mongoose.Schema({
         require: true
     },
     total:{
+        type:String,
+        require: true
+    },
+    paymentMethod:{
         type:String,
         require: true
     },

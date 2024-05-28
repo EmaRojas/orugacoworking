@@ -1,9 +1,7 @@
 const express = require("express");
 const MembershipByUserSchema = require("../models/membershipByUser");
 const MembershipByUserRouter = express.Router();
-const PaymentSchema = require("../models/payment");
 const ClientSchema = require("../models/client");
-const usageSchema = require("../models/usage");
 const ReservationSchema = require("../models/reservation");
 
 
@@ -27,6 +25,7 @@ MembershipByUserRouter.post("/", async (req, res) => {
     let clientID = req.body.clientID;
     const client = await ClientSchema.findById(clientID);
 
+    console.log(req.body);
 
     if (!client) {
       return res.status(404).send({
@@ -41,7 +40,7 @@ MembershipByUserRouter.post("/", async (req, res) => {
       status: 'Activa'
     });
 
-  if (!req.body.clientID || !req.body.membershipID || membership) {
+  if (!req.body.clientID || membership) {
     console.log("ya existe una membresia activa");
     return res.status(400).send({
       success: false,
@@ -53,32 +52,18 @@ MembershipByUserRouter.post("/", async (req, res) => {
     const dateArgentina = new Date(dateUtc.getTime() + difference * 60 * 60 * 1000);
 
 
-    // Crear el objeto de pago
-    const payment = new PaymentSchema({
-      means_of_payment: req.body.means_of_payment,
-      total: req.body.total,
-      paid: req.body.paid,                            
-      status: 'Pagado',
-      created: dateArgentina,
-      billing: req.body.billing
-    });
-
-    // Guardar el pago en la base de datos
-    await payment.save();
-
     // Crear el objeto de reservation
     const membershipByUser = new MembershipByUserSchema({
       clientID: req.body.clientID,
-      membershipID: req.body.membershipID,
-      roomID: req.body.roomID,
+      room: req.body.room,
       created: dateArgentina,
-      paymentID: payment._id,
       status: 'Activa', 
       total_hours: req.body.hours * 3600,
       remaining_hours: req.body.hours * 3600,
       billing: req.body.billing,
       total: req.body.total,
-      paid: req.body.paid
+      paid: req.body.paid,
+      paymentMethod: req.body.paymentMethod
     });
 
     await membershipByUser.save()
@@ -102,7 +87,7 @@ MembershipByUserRouter.post("/", async (req, res) => {
  * @return {object} 400 - Bad request response
  */
 MembershipByUserRouter.get("/", async (req, res) => {
-  let membershipsByUser = await MembershipByUserSchema.find({ status: "Activa" }).populate('clientID').populate('membershipID').populate('paymentID').populate('roomID');
+  let membershipsByUser = await MembershipByUserSchema.find({ status: "Activa" }).populate('clientID');
   return res.status(200).send({
     success: true,
     membershipsByUser
@@ -225,7 +210,6 @@ MembershipByUserRouter.post("/useHours/:id", async (req, res) => {
  * @typedef {object} MembershipByUser
  * @property {string} clientID.required
  * @property {string} membershipID.required
- * @property {string} paymentID.required
  * @property {string} startDate.required
  * @property {string} endDate.required
  */
@@ -240,34 +224,27 @@ MembershipByUserRouter.post("/useHours/:id", async (req, res) => {
 MembershipByUserRouter.put("/:id", async (req, res) => {
   const { id } = req.params;
   const { ...data } = req.body;
-  let membershipByUser = await MembershipByUserSchema.findByIdAndUpdate(id, data, { new: true });
   
+  console.log(req.body);
+  const membershipByUser = await MembershipByUserSchema.findById(id);
+
+
+      membershipByUser.total = req.body.total,
+      membershipByUser.paid = req.body.paid,
+      membershipByUser.billing = req.body.billing,
+      membershipByUser.paymentMethod = req.body.paymentMethod,
+
   
-  const membership = await MembershipByUserSchema.findById(id);
+      await membershipByUser.save()
+      .then((data) => res.status(200).send({
+       success: true,
+       data
+      }))
+      .catch((error) => res.status(500).send({
+       success: false,
+       message: error.message,
+      }));
 
-  const paymentId = membership.paymentID;
-
-  // Obtener la entrada de MembershipByUser para obtener el paymentID
-  const payment = await PaymentSchema.findById(paymentId);
-  if (!payment) {
-    return res.status(404).send({
-      success: false,
-      message: "Entrada de membresía por usuario no encontrada",
-    });
-  }
-
-  payment.total = req.body.total;
-  payment.paid = req.body.paid;
-  payment.billing = req.body.billing,
-
-  // Guardar el pago en la base de datos
-  await payment.save();
-
-  res.status(200).send({
-    success: true,
-    message: "Membresía modificado!",
-    membershipByUser
-  });
 });
 
 /**
@@ -280,17 +257,6 @@ MembershipByUserRouter.put("/:id", async (req, res) => {
 MembershipByUserRouter.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-
-    // const usages = await usageSchema.find({}).populate('membershipByUserID');
-
-    // // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
-    // for (const usage of usages) {
-    //   if (usage.membershipByUserID._id.toString() === id) {
-    //     await usageSchema.findByIdAndDelete(usage._id);
-    //   }
-    // }
-
-
     
     const reservations = await ReservationSchema.find({ membershipID: id });    // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
     for (const reservation of reservations) {
@@ -298,14 +264,6 @@ MembershipByUserRouter.delete("/:id", async (req, res) => {
         await ReservationSchema.findByIdAndDelete(reservation._id);
       
     }
-
-
-    // // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
-    // for (const usage of usages) {
-    //   if (usage.membershipByUserID._id.toString() === id) {
-    //     await usageSchema.findByIdAndDelete(usage._id);
-    //   }
-    // }
 
     // Obtener la entrada de MembershipByUser para obtener el paymentID
     const membershipByUser = await MembershipByUserSchema.findById(id);
@@ -365,7 +323,7 @@ MembershipByUserRouter.get("/client/:email", async (req, res) => {
     const memberships = await MembershipByUserSchema.find({
       clientID: client._id,
       status: 'Activa'
-    }).populate("membershipID").populate("paymentID").populate("roomID");
+    });
 
     res.status(200).send({
       success: true,

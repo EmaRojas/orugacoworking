@@ -1,7 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
 require("dotenv").config();
-
 //swagger
 //https://brikev.github.io/express-jsdoc-swagger-docs/
 const expressJSDocSwagger = require('express-jsdoc-swagger');
@@ -53,18 +52,13 @@ expressJSDocSwagger(app)(options);
  * @return {object} 200 - success response
  */
 app.use("/api/v1/client", require("./routes/ClientRouter"));
-app.use("/api/v1/membership", require("./routes/MembershipRouter"));
-app.use("/api/v1/room", require("./routes/RoomRouter"));
-app.use("/api/v1/payment", require("./routes/PaymentRouter"));
-app.use("/api/v1/priceRoom", require("./routes/PriceRoomRouter"));
 app.use("/api/v1/reservation", require("./routes/ReservationRouter"));
 app.use("/api/v1/membershipByUser", require("./routes/MembershipByUserRouter"));
-app.use("/api/v1/usage", require("./routes/UsageRouter"));
 
 
 // conexión BBDD
 //antes definir vuestra url en el archivo .env
-const URL = "mongodb+srv://facunquintana:nS3XIqH6bdQEyqtL@orugacoworking.gyoky1q.mongodb.net/?retryWrites=true&w=majority";
+const URL = "mongodb+srv://facunquintana:nS3XIqH6bdQEyqtL@orugacoworking.gyoky1q.mongodb.net/OrugaBackend?retryWrites=true&w=majority";
 mongoose
   .connect(URL, {})
   .then(() => {

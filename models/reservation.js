@@ -5,41 +5,46 @@ const ReservationSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref:"Client"
     },
-    priceRoomID:{
+    membershipID:{
         type: mongoose.Schema.Types.ObjectId,
-        ref:"PriceRoom"
+        ref:"MembershipByUser"
     },
-    roomID:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref:"Room"
-    },  
-    dateTime:{
+    room:{
+        type:String
+    },
+    startDateTime:{
         type: Date
     },
     endDateTime:{
         type: Date
     },
+    total:{
+        type:String,
+        require: true
+    },
+    paid:{
+        type:String,
+        require: true
+    },
+    billing: {
+        type: String,
+    },
+    note:{
+        type:String
+    },
+    paymentMethod:{
+        type:String
+    },
     date:{
+        type:String
+    },
+    dateString:{
         type:String
     },
     time:{
         type:String
     },
     endTime:{
-        type:String
-    },
-    paymentID:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref:"Payment"
-    },
-    membershipID:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref:"MembershipByUser"
-    },
-    billing:{
-        type:String
-    },
-    note:{
         type:String
     }
 })
