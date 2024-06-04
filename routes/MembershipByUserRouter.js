@@ -317,13 +317,15 @@ MembershipByUserRouter.get("/client/:email", async (req, res) => {
         success: false,
         message: "Cliente no encontrado",
       });
-    }
+    } 
+
+    console.log(client);
 
     // Buscar las membresías por el ID del cliente
     const memberships = await MembershipByUserSchema.find({
       clientID: client._id,
       status: 'Activa'
-    });
+    }).populate('clientID');
 
     res.status(200).send({
       success: true,
