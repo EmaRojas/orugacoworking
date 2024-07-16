@@ -118,7 +118,18 @@ ReservationRouter.post("/createMembership", async (req, res) => {
     const totalSeconds = convertToSeconds(integerPart, decimalDigits);
     console.log(totalSeconds);
 
-    membershipByUser.remaining_hours = membershipByUser.remaining_hours - totalSeconds;
+    if (totalSeconds > membershipByUser.remaining_hours) {
+      return res.status(400).send({
+        success: false,
+        message: "No tiene las horas suficientes para hacer esta reserva"
+      });
+    } else {
+      membershipByUser.remaining_hours = membershipByUser.remaining_hours - totalSeconds;
+      if(totalSeconds >= membershipByUser.remaining_hours) {
+        membershipByUser.remaining_hours = 0;
+        membershipByUser.status = 'Finalizada'
+      }
+    }
     await membershipByUser.save();
     console.log('¡Membresía actualizada correctamente!');
   }
