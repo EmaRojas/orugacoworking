@@ -228,23 +228,43 @@ MembershipByUserRouter.put("/:id", async (req, res) => {
   console.log(req.body);
   const membershipByUser = await MembershipByUserSchema.findById(id);
 
+  if (!membershipByUser) {
+    return res.status(404).send({
+      success: false,
+      message: "Membership not found",
+    });
+  }
 
-      membershipByUser.total = req.body.total,
-      membershipByUser.paid = req.body.paid,
-      membershipByUser.billing = req.body.billing,
-      membershipByUser.paymentMethod = req.body.paymentMethod,
+  membershipByUser.total = req.body.total;
+  membershipByUser.paid = req.body.paid;
+  membershipByUser.billing = req.body.billing;
+  membershipByUser.paymentMethod = req.body.paymentMethod;
 
-  
-      await membershipByUser.save()
-      .then((data) => res.status(200).send({
-       success: true,
-       data
-      }))
-      .catch((error) => res.status(500).send({
-       success: false,
-       message: error.message,
-      }));
-
+  try {
+    const updatedMembership = await membershipByUser.save();
+    
+    // Check if the update was successful
+    const checkUpdated = await MembershipByUserSchema.findById(id);
+    if (JSON.stringify(checkUpdated) === JSON.stringify(updatedMembership)) {
+      console.log(`Membership ${id} updated successfully`);
+      res.status(200).send({
+        success: true,
+        data: updatedMembership
+      });
+    } else {
+      console.log(`Membership ${id} update may have failed`);
+      res.status(500).send({
+        success: false,
+        message: "Update may have failed, please verify",
+      });
+    }
+  } catch (error) {
+    console.error(`Error updating membership ${id}:`, error.message);
+    res.status(500).send({
+      success: false,
+      message: error.message,
+    });
+  }
 });
 
 /**
@@ -258,37 +278,36 @@ MembershipByUserRouter.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     
-    const reservations = await ReservationSchema.find({ membershipID: id });    // Itera sobre todas las priceRooms y elimina las que tengan el roomID especificado
+    // Delete associated reservations
+    const reservations = await ReservationSchema.find({ membershipID: id });
     for (const reservation of reservations) {
-        console.log(reservation._id);
+      try {
         await ReservationSchema.findByIdAndDelete(reservation._id);
-      
+        console.log(`Reservation ${reservation._id} deleted successfully`);
+      } catch (error) {
+        console.error(`Failed to delete reservation ${reservation._id}:`, error.message);
+      }
     }
 
-    // Obtener la entrada de MembershipByUser para obtener el paymentID
-    const membershipByUser = await MembershipByUserSchema.findById(id);
-    if (!membershipByUser) {
+    // Delete the MembershipByUser
+    const deletedMembership = await MembershipByUserSchema.findByIdAndDelete(id);
+    
+    if (!deletedMembership) {
+      console.log(`Membership ${id} not found`);
       return res.status(404).send({
         success: false,
         message: "Entrada de membresía por usuario no encontrada",
       });
     }
 
-    const paymentId = membershipByUser.paymentID;
-
-    // Eliminar la entrada de MembershipByUser
-    await MembershipByUserSchema.findByIdAndDelete(id);
-
-    // Si se encontró un paymentId, eliminar el pago asociado
-    if (paymentId) {
-      await PaymentSchema.findByIdAndDelete(paymentId);
-    }
+    console.log(`Membership ${id} deleted successfully`);
 
     res.status(200).send({
       success: true,
-      message: "Membresía por usuario eliminada junto con el pago asociado",
+      message: "Membresía por usuario y reservaciones asociadas eliminadas correctamente",
     });
   } catch (error) {
+    console.error(`Error in delete operation:`, error.message);
     res.status(500).send({
       success: false,
       message: error.message,
