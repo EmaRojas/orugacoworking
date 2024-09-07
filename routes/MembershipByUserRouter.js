@@ -327,30 +327,40 @@ MembershipByUserRouter.delete("/:id", async (req, res) => {
 MembershipByUserRouter.get("/client/:email", async (req, res) => {
   try {
     const { email } = req.params;
+    console.log("Searching for email:", email);
+
+    // Trim the email and convert to lowercase
+    const normalizedEmail = email.trim().toLowerCase();
 
     // Buscar el cliente por su dirección de correo electrónico
-    const client = await ClientSchema.findOne({ email });
+    const client = await ClientSchema.findOne({ 
+      email: { $regex: new RegExp('^' + normalizedEmail + '$', 'i') } 
+    });
 
-    if (!client) {
+    if (client) {
+      console.log("Found client with ID:", client._id);
+    } else {
+      console.log("No client found for email:", normalizedEmail);
       return res.status(404).send({
         success: false,
         message: "Cliente no encontrado",
       });
-    } 
-
-    console.log(client);
+    }
 
     // Buscar las membresías por el ID del cliente
+    console.log("Searching for memberships with:", { clientID: client._id, status: 'Activa' });
     const memberships = await MembershipByUserSchema.find({
       clientID: client._id,
       status: 'Activa'
     }).populate('clientID');
+    console.log("Memberships query result:", memberships);
 
     res.status(200).send({
       success: true,
       memberships,
     });
   } catch (error) {
+    console.error("Error in /client/:email route:", error);
     res.status(500).send({
       success: false,
       message: error.message,

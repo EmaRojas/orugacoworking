@@ -24,25 +24,38 @@ const MembershipByUserSchema = require("../models/membershipByUser");
  * @return {object} 200 - song response
  */
 ClientRouter.post("/", async (req, res) => {
-  const client = clientSchema(req.body);
+  try {
+    const { email } = req.body;
+    
+    // Check if email already exists
+    const existingClient = await clientSchema.findOne({ email });
+    if (existingClient) {
+      return res.status(400).send({
+        success: false,
+        message: "El correo electrónico ya está registrado"
+      });
+    }
 
-  if (!client.full_name || !client.phone || !client.email || !client.company_name || !client.cuit || !client.category) {
-    return res.status(400).send({
-      success: false,
-      message: "Faltan datos de completar"
-    });
-  }
+    const client = clientSchema(req.body);
 
-  client
-    .save()
-    .then((data) => res.status(200).send({
+    if (!client.full_name || !client.phone || !client.email || !client.company_name || !client.cuit || !client.category) {
+      return res.status(400).send({
+        success: false,
+        message: "Faltan datos de completar"
+      });
+    }
+
+    const savedClient = await client.save();
+    res.status(200).send({
       success: true,
-      data
-    }))
-    .catch((error) => res.status(500).send({
+      data: savedClient
+    });
+  } catch (error) {
+    res.status(500).send({
       success: false,
       message: error.message,
-    }));
+    });
+  }
 });
 
 //get all
